@@ -1,0 +1,16 @@
+{
+    "extends": ["clarity"],
+    "parser": "babel-eslint",
+    // Overrides for this specific project
+    "rules": {
+        // Module reloading relies on dynamic require()
+        "import/no-dynamic-require": "off",
+        "no-param-reassign": "off",
+        "no-await-in-loop": "off",
+        "prefer-destructuring": "off",
+        "no-useless-concat": "off",
+        "curly": "error",
+        "no-sync": "off",
+        "require-atomic-updates": "off"
+    }
+}
