@@ -3,11 +3,11 @@ const { google } = require("googleapis");
 const ms = require("ms");
 
 const colors = require("../../../colors.json");
-const { play } = require("../../../functions");
+const { play, convertISO } = require("../../../functions");
 
 module.exports = {
     name: "search",
-    aliases: [""],
+    aliases: ["s"],
     category: "music",
     description: "",
     usage: ["`-<command | alias> `"],
@@ -48,8 +48,7 @@ module.exports = {
                     songList.push(song);
                     songChoices.push({
                         song: songURL,
-                        info: item.snippet.title,
-                        owner: message.author,
+                        id: item.id.videoId,
                     });
                 });
 
@@ -68,12 +67,50 @@ module.exports = {
                             time: ms("5m"),
                             errors: ["time"],
                         })
-                        .then((collected) => {
+                        .then(async (collected) => {
                             const index = collected.first().content;
-                            console.log(songList[index - 1]);
-                            console.log(songChoices[index - 1]);
-                            server.queue.push(songChoices[index - 1]);
-                            // console.log(message);
+                            // console.log(songList[index - 1]);
+                            // console.log(songChoices[index - 1].id);
+                            const res = await youtube.videos.list({
+                                part: "snippet,contentDetails",
+                                id: songChoices[index - 1].id,
+                                auth: process.env.YT_API,
+                            });
+                            const songURL = `https://www.youtube.com/watch?v=${res.data.items[0].id}`;
+                            server.queue.push({
+                                song: songURL,
+                                title: res.data.items[0].snippet.title,
+                                thumbnail:
+                                    res.data.items[0].snippet.thumbnails.medium
+                                        .url,
+                                owner: message.author,
+                                duration: convertISO(
+                                    res.data.items[0].contentDetails.duration
+                                ),
+                            });
+                            // console.log(server.queue[0]);
+
+                            // Sends confirmation for Qeueue
+                            const embed = new MessageEmbed()
+                                .setTitle("Song added to the Queue!")
+                                .setAuthor(
+                                    `${message.author.username}`,
+                                    message.author.displayAvatarURL()
+                                )
+                                .setDescription(
+                                    `[${res.data.items[0].snippet.title}](
+                                        ${songURL}
+                                    )`
+                                )
+                                .setThumbnail(
+                                    res.data.items[0].snippet.thumbnails.medium
+                                        .url
+                                )
+                                .setFooter(
+                                    `${bot.user.username} | MahoMuri`,
+                                    bot.user.displayAvatarURL()
+                                );
+                            message.channel.send(embed);
 
                             // Checks for instance of server dispatcher
                             if (!server.dispatcher)
@@ -87,6 +124,7 @@ module.exports = {
                                 play(connection, message, server, bot);
                         })
                         .catch((collected) => {
+                            console.log(collected);
                             console.log(`Timeout: ${collected.size}`);
                             msg.delete();
                         });

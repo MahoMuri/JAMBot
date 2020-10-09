@@ -1,6 +1,10 @@
+const { MessageEmbed } = require("discord.js");
+
+const colors = require("../../../colors.json");
+
 module.exports = {
     name: "loop",
-    aliases: [""],
+    aliases: ["l"],
     category: "music",
     description: "",
     usage: ["`-<command | alias> `"],
@@ -8,8 +12,21 @@ module.exports = {
         if (message.member.voice.channel) {
             const server = await bot.servers[message.guild.id];
             if (!server) return;
-            else if (!server.loop) server.loop = true;
-            else server.loop = false;
+            else if (!server.loop) {
+                message.react("🔁");
+                server.loop = true;
+                const embed = new MessageEmbed()
+                    .setTitle("**✅ Loop enabled!**")
+                    .setColor(colors.Green);
+                message.channel.send(embed);
+            } else {
+                message.react("🔁");
+                server.loop = false;
+                const embed = new MessageEmbed()
+                    .setTitle("**❌ Loop disabled!**")
+                    .setColor(colors.Red);
+                message.channel.send(embed);
+            }
 
             console.log(server.loop);
         } else

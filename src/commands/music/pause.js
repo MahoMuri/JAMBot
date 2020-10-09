@@ -1,6 +1,6 @@
 module.exports = {
     name: "pause",
-    aliases: [""],
+    aliases: [],
     category: "music",
     description: "",
     usage: ["`-<command | alias> `"],

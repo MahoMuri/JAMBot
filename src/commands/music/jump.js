@@ -1,9 +1,13 @@
-const { play } = require("../../../functions");
+const { stripIndents } = require("common-tags");
+const { MessageEmbed } = require("discord.js");
+
+const colors = require("../../../colors.json");
+const { play, convertDuration } = require("../../../functions");
 
 module.exports = {
     name: "jump",
-    aliases: [""],
-    category: "",
+    aliases: ["j"],
+    category: "music",
     description: "",
     usage: ["`-<command | alias> `"],
     async run(bot, message, args) {
@@ -24,7 +28,20 @@ module.exports = {
             else if (isNaN(args[0]))
                 return message.channel.send("❌ **Error, not a number!**");
             else {
-                server.jump = args[0] - 1;
+                message.react("👌");
+                const index = args[0] - 1;
+                server.jump = index;
+                const embed = new MessageEmbed()
+                    .setTitle("✅ Jumped to: ")
+                    .setColor(colors.Green)
+                    .setDescription(
+                        stripIndents`[${server.queue[index].title}](${
+                            server.queue[index].song
+                        }) | \`${convertDuration(
+                            server.queue[index].duration
+                        )}\`\nRequested by: ${server.queue[index].owner}`
+                    );
+                message.channel.send(embed);
                 play(connection, message, server, bot, server.jump);
             }
         } else

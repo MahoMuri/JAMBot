@@ -3,6 +3,7 @@ const { MessageEmbed } = require("discord.js");
 const ms = require("ms");
 
 const colors = require("../../../colors.json");
+const { convertDuration } = require("../../../functions");
 
 module.exports = {
     name: "queue",
@@ -21,7 +22,7 @@ module.exports = {
         const server = await bot.servers[message.guild.id];
         if (server.queue.length === 0)
             message.channel.send(
-                "**The Music Queue Is Empty! Use `_play` to add more!**"
+                "**The Music Queue Is Empty! Use `-play` to add more!**"
             );
         else if (server.queue.length > 0) {
             // Sets the format for the Music queue to be displayed in MessageEmbed#setDescription
@@ -31,22 +32,28 @@ module.exports = {
                 if (server.jump) {
                     const index = server.jump;
                     song = `__**Now Playing:**__\n${iterator + 1}. [${
-                        server.queue[index].info
+                        server.queue[index].title
                     }](${server.queue[index].song}) | \`Requested by: ${
                         item.owner.tag
                     }\n\`\n`;
                 } else if (songList.length === 0)
                     song = `__**Now Playing:**__\n${iterator + 1}. [${
-                        item.info
-                    }](${item.song}) | \`Requested by: ${item.owner.tag}\n\`\n`;
+                        item.title
+                    }](${item.song}) | \`${convertDuration(
+                        server.queue[iterator].duration
+                    )}\` | \`Requested by: ${item.owner.tag}\n\`\n`;
                 else if (songList.length === 1)
-                    song = `__**Up next:**__\n${iterator + 1}. [${item.info}](${
-                        item.song
-                    }) | \`Requested by: ${item.owner.tag}\n\``;
+                    song = `__**Up next:**__\n${iterator + 1}. [${
+                        item.title
+                    }](${item.song}) | \`${convertDuration(
+                        server.queue[iterator].duration
+                    )}\` | \`Requested by: ${item.owner.tag}\n\``;
                 else
-                    song = `${iterator + 1}. [${item.info}](${
+                    song = `${iterator + 1}. [${item.title}](${
                         item.song
-                    }) | \`Requested by: ${item.owner.tag}\n\``;
+                    }) | \`${convertDuration(
+                        server.queue[iterator].duration
+                    )}\` | \`Requested by: ${item.owner.tag}\n\``;
 
                 songList.push(song);
             });

@@ -1,5 +1,9 @@
 const { stripIndents } = require("common-tags");
 const { MessageEmbed } = require("discord.js");
+const ms = require("ms");
+const parseSecs = require("parse-seconds");
+const sf = require("seconds-formater");
+const { parse } = require("tinyduration");
 const ytdl = require("ytdl-core");
 
 const colors = require("./colors.json");
@@ -81,8 +85,13 @@ function play(connection, message, server, bot, jump) {
                 .setTitle("**Now playing:**")
                 .setColor(colors.Turquoise)
                 .setDescription(
-                    stripIndents`[${server.queue[index].info}](${server.queue[index].song})\nRequested by: ${server.queue[index].owner}`
-                );
+                    stripIndents`[${server.queue[index].title}](${
+                        server.queue[index].song
+                    }) | \`${convertDuration(
+                        server.queue[index].duration
+                    )}\`\nRequested by: ${server.queue[index].owner}`
+                )
+                .setThumbnail(server.queue[index].thumbnail);
             message.channel.send(embed);
         } else {
             const oldMessage = message.channel.messages.cache.find(
@@ -97,8 +106,13 @@ function play(connection, message, server, bot, jump) {
                 .setTitle("**Now playing:**")
                 .setColor(colors.Turquoise)
                 .setDescription(
-                    stripIndents`[${server.queue[index].info}](${server.queue[index].song})\nRequested by: ${server.queue[index].owner}`
-                );
+                    stripIndents`[${server.queue[index].title}](${
+                        server.queue[index].song
+                    }) | \`${convertDuration(
+                        server.queue[index].duration
+                    )}\`\nRequested by: ${server.queue[index].owner}`
+                )
+                .setImage(server.queue[index].thumbnail);
             message.channel.send(embed);
         }
     });
@@ -119,10 +133,31 @@ function play(connection, message, server, bot, jump) {
     server.dispatcher.on("error", console.error);
 }
 
+function convertDuration(seconds) {
+    const parsed = parseSecs(seconds);
+    let duration;
+    if (parsed.hours) duration = sf.convert(seconds).format("H:MM:SS");
+    else duration = sf.convert(seconds).format("M:SS");
+
+    return duration;
+}
+
+function convertISO(iso) {
+    const parsed = parse(iso);
+    const duration =
+        (ms(`${parsed.hours || 0}h`) +
+            ms(`${parsed.minutes || 0}m`) +
+            ms(`${parsed.seconds || 0}s`)) /
+        1000;
+    return duration;
+}
+
 module.exports = {
     getMember,
     formatDate,
     promptMessage,
     addCommas,
     play,
+    convertDuration,
+    convertISO,
 };
