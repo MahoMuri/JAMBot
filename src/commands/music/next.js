@@ -1,8 +1,8 @@
 module.exports = {
     name: "next",
-    aliases: ["n"],
+    aliases: ["n", "skip"],
     category: "music",
-    description: "",
+    description: "Skips to the next song",
     usage: ["`-<command | alias> `"],
     async run(bot, message) {
         if (!bot.servers[message.guild.id])
@@ -16,8 +16,11 @@ module.exports = {
 
         if (!server.dispatcher)
             return message.channel.send(
-                "**The Music Queue Is Empty! Use `_play` to add more!**"
+                "**The Music Queue Is Empty! Use `-play` to add more!**"
             );
-        else server.dispatcher.end();
+        else {
+            await message.channel.send("**⏭ Skipping!**");
+            server.dispatcher.end();
+        }
     },
 };

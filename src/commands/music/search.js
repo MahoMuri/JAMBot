@@ -9,7 +9,7 @@ module.exports = {
     name: "search",
     aliases: ["s"],
     category: "music",
-    description: "",
+    description: "Searches for the specifies song.",
     usage: ["`-<command | alias> `"],
     async run(bot, message, args) {
         const youtube = google.youtube("v3");
@@ -31,12 +31,19 @@ module.exports = {
                     "**❌ Please provide a search parameter!**"
                 );
             else {
+                message.channel.send(
+                    `**🔎 Searching YouTube for \`${song}\`**`
+                );
                 const res = await youtube.search.list({
                     part: "snippet",
                     maxResults: 10,
                     q: song,
                     auth: process.env.YT_API,
                 });
+                if (res.data.items.length === 0)
+                    return message.channel.send(
+                        `❌ Could not find \`${song}\`, are you sure that's the right song?`
+                    );
                 // console.log(res.data);
                 const songList = [];
                 const songChoices = [];

@@ -77,12 +77,12 @@ function play(connection, message, server, bot, jump) {
                 (message) =>
                     message.author.id === bot.user.id &&
                     message.embeds.find(
-                        (embed) => embed.title === "**Now playing:**"
+                        (embed) => embed.author.name === "Now Playing:"
                     )
             )
         ) {
             const embed = new MessageEmbed()
-                .setTitle("**Now playing:**")
+                .setAuthor("Now Playing:", bot.logo)
                 .setColor(colors.Turquoise)
                 .setDescription(
                     stripIndents`[${server.queue[index].title}](${
@@ -98,12 +98,12 @@ function play(connection, message, server, bot, jump) {
                 (message) =>
                     message.author.id === bot.user.id &&
                     message.embeds.find(
-                        (embed) => embed.title === "**Now playing:**"
+                        (embed) => embed.author.name === "Now Playing:"
                     )
             );
             oldMessage.delete();
             const embed = new MessageEmbed()
-                .setTitle("**Now playing:**")
+                .setAuthor("Now Playing:", bot.logo)
                 .setColor(colors.Turquoise)
                 .setDescription(
                     stripIndents`[${server.queue[index].title}](${
@@ -112,7 +112,7 @@ function play(connection, message, server, bot, jump) {
                         server.queue[index].duration
                     )}\`\nRequested by: ${server.queue[index].owner}`
                 )
-                .setImage(server.queue[index].thumbnail);
+                .setThumbnail(server.queue[index].thumbnail);
             message.channel.send(embed);
         }
     });

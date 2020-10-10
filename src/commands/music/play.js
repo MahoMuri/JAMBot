@@ -2,17 +2,21 @@ const { MessageEmbed } = require("discord.js");
 const { google } = require("googleapis");
 const ytfps = require("ytfps");
 
+const colors = require("../../../colors.json");
 const { play, addCommas, convertISO } = require("../../../functions");
 
+let channelsCache = {
+    connected: false,
+};
 module.exports = {
     name: "play",
-    aliases: ["p"],
+    aliases: ["p", "resume"],
     category: "music",
-    description: "",
-    usage: ["`-<command | alias> `"],
+    description: "Plays the song.",
+    usage: ["`-<command | alias> [YouTube link | Search query]`"],
     async run(bot, message, args) {
         const youtube = google.youtube("v3");
-        const ytreply = "**🔎 Searching youtube for  **";
+        const ytreply = "**🔎 Searching YouTube for  **";
 
         if (!bot.servers[message.guild.id])
             bot.servers[message.guild.id] = {
@@ -25,25 +29,38 @@ module.exports = {
 
         if (message.member.voice.channel) {
             const connection = await message.member.voice.channel.join();
+            if (!channelsCache.connected) {
+                message.channel.send(
+                    `✅ **Joined ${connection.channel.name} Voice Channel!**`
+                );
+                channelsCache = {
+                    guild: message.guild.name,
+                    channel: connection.channel.name,
+                    connected: true,
+                };
+            }
             const song = args.join(" ");
             if (!song) {
                 if (server.queue.length === 0)
                     return message.channel.send(
                         "**The Music Queue Is Empty! Use `-play` to add more!**"
                     );
-                else if (server.dispatcher) server.dispatcher.resume();
+                else if (server.dispatcher) {
+                    server.dispatcher.resume();
+                    const embed = new MessageEmbed()
+                        .setDescription("**▶ Playing!**")
+                        .setColor(colors.Green);
+                    message.channel.send(embed);
+                }
             } else
                 try {
+                    message.channel.send(`${ytreply}\`${song}\``);
                     // First check if song is a search query
                     const checkWord = "https";
                     if (!song.toString().includes(checkWord)) {
                         const songURLs = [];
 
                         // Searches for the song by query
-                        await message.channel.send(
-                            `✅ **Joined ${connection.channel.name} Voice Channel!**`
-                        );
-                        await message.channel.send(`${ytreply}\`${song}\``);
                         await youtube.search
                             .list({
                                 part: "snippet",
@@ -52,6 +69,11 @@ module.exports = {
                                 auth: process.env.YT_API,
                             })
                             .then((res) => {
+                                if (res.data.items.length === 0)
+                                    return message.channel.send(
+                                        `❌ Could not find \`${song}\`, are you sure that's the right song?`
+                                    );
+
                                 res.data.items.forEach((item) => {
                                     songURLs.push({
                                         url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
@@ -69,7 +91,8 @@ module.exports = {
                         server.queue.push({
                             song: songURLs[0].url,
                             title: res.data.items[0].snippet.title,
-                            thumbnails: res.data.items[0].snippet.thumbnails,
+                            thumbnail:
+                                res.data.items[0].snippet.thumbnails.medium.url,
                             owner: message.author,
                             duration: convertISO(
                                 res.data.items[0].contentDetails.duration
@@ -102,10 +125,6 @@ module.exports = {
 
                         // If it's a Playlist URL
                         // eslint-disable-next-line curly
-                        await message.channel.send(
-                            `✅ **Joined ${connection.channel.name} Voice Channel!**`
-                        );
-                        await message.channel.send(`${ytreply}\`${song}\``);
                         if (url.searchParams.get("list")) {
                             // Execute this if the URL is a playlist URL
                             let playlistInfo = {};
@@ -129,7 +148,7 @@ module.exports = {
                                     });
                                 })
                                 .catch(console.error);
-                            console.log(server.queue[0]);
+                            // console.log(server.queue[0]);
                             // Sends confirmation message
                             const embed = new MessageEmbed()
                                 .setTitle("Playlist added to the Queue!")
@@ -160,10 +179,6 @@ module.exports = {
                             message.channel.send(embed);
                         } else {
                             // Execute this if its a video URL
-                            await message.channel.send(
-                                `✅ **Joined ${connection.channel.name} Voice Channel!**`
-                            );
-                            await message.channel.send(`${ytreply}\`${song}\``);
                             const res = await youtube.videos.list({
                                 part: "snippet,contentDetails",
                                 id: url.searchParams.get("v"),

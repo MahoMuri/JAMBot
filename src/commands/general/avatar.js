@@ -6,7 +6,7 @@ const { getMember } = require("../../../functions.js");
 module.exports = {
     name: "avatar",
     aliases: ["me", "about"],
-    category: "info",
+    category: "general",
     description: "Gives your avatar or the avatar of another user",
     usage: "`-<command | alias> [@user]`",
     run(bot, message, args) {

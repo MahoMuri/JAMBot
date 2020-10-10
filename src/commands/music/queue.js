@@ -9,7 +9,7 @@ module.exports = {
     name: "queue",
     aliases: ["q"],
     category: "music",
-    description: "",
+    description: "Displays the queue of this server",
     usage: ["`-<command | alias> `"],
     async run(bot, message) {
         if (!bot.servers[message.guild.id])
@@ -33,9 +33,10 @@ module.exports = {
                     const index = server.jump;
                     song = `__**Now Playing:**__\n${iterator + 1}. [${
                         server.queue[index].title
-                    }](${server.queue[index].song}) | \`Requested by: ${
-                        item.owner.tag
-                    }\n\`\n`;
+                    }](${server.queue[index].song}) | \`${convertDuration(
+                        server.queue[iterator].duration
+                    )}\` | \`Requested by: ${item.owner.tag}\n\`\n`;
+                    server.jump = null;
                 } else if (songList.length === 0)
                     song = `__**Now Playing:**__\n${iterator + 1}. [${
                         item.title
@@ -90,7 +91,11 @@ module.exports = {
                 .setTimeout(ms("5m"))
                 .setDeleteOnTimeout(true)
                 // Methods below are for customising all embeds
-                .setTitle(`Music Queue for ${message.guild.name}`)
+                .setTitle(
+                    `Music Queue for ${message.guild.name} | Loop is: ${
+                        server.loop ? "Enabled" : "Disabled"
+                    }`
+                )
                 .setColor(colors.Lavander_Purple)
                 .build();
         }

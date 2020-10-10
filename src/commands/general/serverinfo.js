@@ -5,7 +5,7 @@ const colors = require("../../../colors.json");
 module.exports = {
     name: "serverinfo",
     aliases: ["info", "aboutme"],
-    category: "info",
+    category: "general",
     description: "Displays the Information of the Server",
     usage: "`-<command | alias>`",
     run(bot, message) {
@@ -73,7 +73,7 @@ module.exports = {
             )
             .setTimestamp()
             .setFooter(
-                "AGGRESSIVE GOODTALKER | By MahoMuri",
+                `${bot.user.username} | By MahoMuri`,
                 bot.user.displayAvatarURL()
             );
         message.channel.send(sEmbed);

@@ -6,7 +6,7 @@ module.exports = {
     name: "loop",
     aliases: ["l"],
     category: "music",
-    description: "",
+    description: "Loops the queue",
     usage: ["`-<command | alias> `"],
     async run(bot, message) {
         if (message.member.voice.channel) {
@@ -16,14 +16,14 @@ module.exports = {
                 message.react("🔁");
                 server.loop = true;
                 const embed = new MessageEmbed()
-                    .setTitle("**✅ Loop enabled!**")
+                    .setDescription("**✅ Loop enabled!**")
                     .setColor(colors.Green);
                 message.channel.send(embed);
             } else {
                 message.react("🔁");
                 server.loop = false;
                 const embed = new MessageEmbed()
-                    .setTitle("**❌ Loop disabled!**")
+                    .setDescription("**❌ Loop disabled!**")
                     .setColor(colors.Red);
                 message.channel.send(embed);
             }

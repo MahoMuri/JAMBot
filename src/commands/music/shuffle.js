@@ -7,7 +7,7 @@ module.exports = {
     name: "shuffle",
     aliases: ["shfl"],
     category: "music",
-    description: "",
+    description: "Shuffles the song",
     usage: ["`-<command | alias> `"],
     async run(bot, message) {
         if (!bot.servers[message.guild.id])
@@ -27,9 +27,9 @@ module.exports = {
             message.react("🔀");
             const nowPlaying = server.queue[0];
             server.queue = shuffle(server.queue.slice(1));
-            server.queue[0] = nowPlaying;
+            server.queue.unshift(nowPlaying);
             const embed = new MessageEmbed()
-                .setTitle("**✅ Shuffled the queue!**")
+                .setDescription("**✅ Shuffled the queue!**")
                 .setColor(colors.Green);
             message.channel.send(embed);
         }

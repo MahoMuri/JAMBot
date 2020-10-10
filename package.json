@@ -25,7 +25,7 @@
         "seconds-formater": "^1.2.0",
         "tinyduration": "^3.1.1",
         "ytdl-core": "^3.3.0",
-        "ytfps": "github:Mahomuri/ytfps#master"
+        "ytfps": "^1.0.1"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.1.0",

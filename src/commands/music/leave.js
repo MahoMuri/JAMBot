@@ -1,8 +1,8 @@
 module.exports = {
     name: "leave",
-    aliases: [""],
+    aliases: ["dc", "disconnect"],
     category: "music",
-    description: "",
+    description: "Leaves the voice channel",
     usage: ["`-<command | alias> `"],
     async run(bot, message) {
         if (message.member.voice.channel) {

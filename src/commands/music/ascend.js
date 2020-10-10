@@ -2,13 +2,12 @@ const { stripIndents } = require("common-tags");
 const { MessageEmbed } = require("discord.js");
 
 const colors = require("../../../colors.json");
-const { play, convertDuration } = require("../../../functions");
 
 module.exports = {
-    name: "jump",
-    aliases: ["jmp"],
+    name: "ascend",
+    aliases: ["asc"],
     category: "music",
-    description: "Jumps to the selected song in the queue.",
+    description: "Brings the selected song to the top of the queue.",
     usage: ["`-<command | alias> `"],
     async run(bot, message, args, prefix) {
         if (message.member.voice.channel) {
@@ -30,19 +29,16 @@ module.exports = {
             else {
                 message.react("👌");
                 const index = args[0] - 1;
-                server.jump = index;
+                const songChoice = server.queue[index];
+                server.queue.splice(index, 1);
+                server.queue.splice(1, 0, songChoice);
                 const embed = new MessageEmbed()
-                    .setTitle("✅ Jumped to: ")
+                    .setTitle("✅ Ascended! ")
                     .setColor(colors.Green)
                     .setDescription(
-                        stripIndents`[${server.queue[index].title}](${
-                            server.queue[index].song
-                        }) | \`${convertDuration(
-                            server.queue[index].duration
-                        )}\`\nRequested by: ${server.queue[index].owner}`
+                        `Succefully ascended [${songChoice.title}](${songChoice.song}) to the top of the queue!`
                     );
                 message.channel.send(embed);
-                play(connection, message, server, bot, server.jump);
             }
         } else
             return message.channel.send(

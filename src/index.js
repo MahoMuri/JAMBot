@@ -21,6 +21,7 @@ bot.commands = new Collection();
 bot.queue = [];
 bot.channelsCache = [];
 bot.servers = {};
+bot.logo = "https://media2.giphy.com/media/7pDcO2wqoADoGwr504/giphy.gif";
 
 // Setup configuration
 config({

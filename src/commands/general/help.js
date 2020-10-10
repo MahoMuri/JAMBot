@@ -4,7 +4,7 @@ const { MessageEmbed } = require("discord.js");
 module.exports = {
     name: "help",
     aliases: ["h"],
-    category: "info",
+    category: "general",
     description: "Displays all commands, or one specific command info",
     usage: "-<command | alias> [command name]",
     run(bot, message, args) {

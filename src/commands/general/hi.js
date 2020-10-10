@@ -3,7 +3,7 @@ const { getMember } = require("../../../functions.js");
 module.exports = {
     name: "hi",
     aliases: ["hey", "hello"],
-    category: "entertainment",
+    category: "general",
     description: "Replies Hello",
     usage: ["`-<command | alias>`"],
     async run(bot, message, args) {

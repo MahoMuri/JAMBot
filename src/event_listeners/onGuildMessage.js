@@ -50,6 +50,6 @@ module.exports = (bot) => {
         if (!command) command = bot.commands.get(bot.aliases.get(cmd));
 
         // If a command is finally found, run the command
-        if (command) command.run(bot, message, args);
+        if (command) command.run(bot, message, args, prefix);
     });
 };

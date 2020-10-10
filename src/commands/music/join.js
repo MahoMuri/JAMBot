@@ -1,8 +1,8 @@
 module.exports = {
     name: "join",
-    aliases: [""],
+    aliases: ["j"],
     category: "music",
-    description: "",
+    description: "Makes the bot join your voice channel",
     usage: ["`-<command | alias> `"],
     async run(bot, message) {
         if (message.member.voice.channel) {
