@@ -13,7 +13,10 @@ module.exports = {
         if (!bot.servers[message.guild.id])
             bot.servers[message.guild.id] = {
                 name: message.guild.name,
-                loop: false,
+                loop: {
+                    song: false,
+                    queue: false,
+                },
                 queue: [],
             };
 

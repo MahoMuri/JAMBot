@@ -5,11 +5,11 @@ const { DMChannel } = require("discord.js");
 
 const fs = require("fs");
 
-const { defaultPrefix } = require(`${__dirname}/../../botprefix.json`);
+const { defaultPrefix } = require("../../botprefix.json");
 
 module.exports = (bot) => {
     bot.on("message", async (message) => {
-        // console.log("message received");
+        // console.log(defaultPrefix);
         if (message.channel instanceof DMChannel) return;
 
         const prefixes = JSON.parse(
@@ -18,16 +18,16 @@ module.exports = (bot) => {
 
         if (!prefixes[message.guild.id]) {
             prefixes[message.guild.id] = {
-                prefixes: defaultPrefix,
+                prefix: defaultPrefix,
             };
 
             fs.writeFileSync(
                 `${__dirname}/../../prefixes.json`,
-                JSON.stringify(prefixes)
+                JSON.stringify(prefixes, null, "\t")
             );
         }
 
-        const prefix = prefixes[message.guild.id].prefixes;
+        const prefix = prefixes[message.guild.id].prefix;
         if (
             message.author.bot ||
             !message.guild ||

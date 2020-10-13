@@ -21,7 +21,7 @@ module.exports = (bot) => {
     bot.on("ready", () => {
         const logMsg = `✅ ${bot.user.username} is online on ${
             bot.guilds.cache.size
-        } server${bot.guilds.cache.size > 1 ? "s" : ""}!`;
+        } server${bot.guilds.cache.size === 1 ? "s" : ""}!`;
 
         console.log(logMsg);
 

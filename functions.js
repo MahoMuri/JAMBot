@@ -59,78 +59,65 @@ function addCommas(nStr) {
     return x1 + x2;
 }
 
-function play(connection, message, server, bot, jump) {
+function play(connection, message, server, bot, jump, seek) {
     const index = jump || 0;
-
+    const seekTime = seek || 0;
     server.dispatcher = connection.play(
         ytdl(server.queue[index].song.toString(), {
             quality: "highestaudio",
             highWaterMark: 1 << 25,
-        })
+        }),
+        { seek: seekTime }
     );
 
     server.dispatcher.on("start", () => {
-        console.log("Playing Music!");
-        // console.log(server.dispatcher._writableState);
-        if (
-            !message.channel.messages.cache.find(
-                (message) =>
-                    message.author.id === bot.user.id &&
-                    message.embeds.find(
-                        (embed) => embed.author.name === "Now Playing:"
-                    )
-            )
-        ) {
-            const embed = new MessageEmbed()
-                .setAuthor("Now Playing:", bot.logo)
-                .setColor(colors.Turquoise)
-                .setDescription(
-                    stripIndents`[${server.queue[index].title}](${
-                        server.queue[index].song
-                    }) | \`${convertDuration(
-                        server.queue[index].duration
-                    )}\`\nRequested by: ${server.queue[index].owner}`
-                )
-                .setThumbnail(server.queue[index].thumbnail);
-            message.channel.send(embed);
-        } else {
-            const oldMessage = message.channel.messages.cache.find(
-                (message) =>
-                    message.author.id === bot.user.id &&
-                    message.embeds.find(
-                        (embed) => embed.author.name === "Now Playing:"
-                    )
-            );
-            oldMessage.delete();
-            const embed = new MessageEmbed()
-                .setAuthor("Now Playing:", bot.logo)
-                .setColor(colors.Turquoise)
-                .setDescription(
-                    stripIndents`[${server.queue[index].title}](${
-                        server.queue[index].song
-                    }) | \`${convertDuration(
-                        server.queue[index].duration
-                    )}\`\nRequested by: ${server.queue[index].owner}`
-                )
-                .setThumbnail(server.queue[index].thumbnail);
-            message.channel.send(embed);
+        // console.log("Playing Music!");
+        if (bot.messageCache.length !== 0) {
+            message.channel.messages.delete(bot.messageCache[0]);
+            bot.messageCache.shift();
         }
+        const embed = new MessageEmbed()
+            .setAuthor("Now Playing:", bot.logo)
+            .setColor(colors.Turquoise)
+            .setDescription(
+                stripIndents`[${server.queue[index].title}](${
+                    server.queue[index].song
+                }) | \`${convertDuration(
+                    server.queue[index].duration
+                )}\`\nRequested by: ${server.queue[index].owner}`
+            )
+            .setThumbnail(server.queue[index].thumbnail);
+        message.channel.send(embed).then((msg) => {
+            bot.messageCache.push(msg.id);
+        });
     });
 
     server.dispatcher.on("finish", async () => {
-        if (!server.loop) {
+        if (!server.loop.queue && !server.loop.song) {
             await server.queue.shift();
             console.log("Stopped Playing!");
-        } else {
-            const lastSong = server.queue[index];
-            server.queue.shift();
-            server.queue.push(lastSong);
-        }
+        } else if (server.loop.queue)
+            if (!server.loop.next && !server.loop.song) {
+                const lastSong = server.queue[index];
+                server.queue.shift();
+                server.queue.push(lastSong);
+            } else if (server.loop.next) {
+                const lastSong = server.queue[index];
+                server.queue.shift();
+                server.queue.push(lastSong);
+                server.loop.next = false;
+            }
 
         if (server.queue[index]) play(connection, message, server, bot);
     });
 
-    server.dispatcher.on("error", console.error);
+    server.dispatcher.on("error", () => {
+        message.channel.send(
+            "❌ **Could not play song! Video unavailable, skipping to the next song.**"
+        );
+        server.queue.shift();
+        if (server.queue[index]) play(connection, message, server, bot);
+    });
 }
 
 function convertDuration(seconds) {

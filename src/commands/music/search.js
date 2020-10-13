@@ -1,5 +1,6 @@
 const { MessageEmbed } = require("discord.js");
 const { google } = require("googleapis");
+const Entities = require("html-entities").AllHtmlEntities;
 const ms = require("ms");
 
 const colors = require("../../../colors.json");
@@ -13,12 +14,16 @@ module.exports = {
     usage: ["`-<command | alias> `"],
     async run(bot, message, args) {
         const youtube = google.youtube("v3");
+        const entities = new Entities();
 
         if (message.member.voice.channel) {
             if (!bot.servers[message.guild.id])
                 bot.servers[message.guild.id] = {
                     name: message.guild.name,
-                    loop: false,
+                    loop: {
+                        song: false,
+                        queue: false,
+                    },
                     queue: [],
                 };
 
@@ -38,6 +43,7 @@ module.exports = {
                     part: "snippet",
                     maxResults: 10,
                     q: song,
+                    type: "video",
                     auth: process.env.YT_API,
                 });
                 if (res.data.items.length === 0)
@@ -49,9 +55,9 @@ module.exports = {
                 const songChoices = [];
                 res.data.items.forEach((item, iterator) => {
                     const songURL = `https://www.youtube.com/watch?v=${item.id.videoId}`;
-                    const song = `${iterator + 1}. [${
+                    const song = `${iterator + 1}. [${entities.decode(
                         item.snippet.title
-                    }](${songURL})\n`;
+                    )}](${songURL})\n`;
                     songList.push(song);
                     songChoices.push({
                         song: songURL,
@@ -63,11 +69,13 @@ module.exports = {
                     .setTitle(`Search Results for: ${song}`)
                     .setDescription(songList)
                     .setColor(colors.Beige)
-                    .setFooter(`${bot.user.username} | MahoMuri`);
+                    .setFooter(
+                        `Searched by: ${message.author.username}`,
+                        message.author.displayAvatarURL()
+                    );
 
                 message.channel.send(embed).then((msg) => {
-                    const filter = (msg) =>
-                        msg.author.id !== bot.user.id && !isNaN(msg.content);
+                    const filter = (msg) => msg.author.id !== bot.user.id;
                     msg.channel
                         .awaitMessages(filter, {
                             max: 1,
@@ -75,17 +83,34 @@ module.exports = {
                             errors: ["time"],
                         })
                         .then(async (collected) => {
+                            if (collected.first().content === "cancel") {
+                                message.react("👌");
+                                return message.channel.send(
+                                    "✅ **Cancelled!**"
+                                );
+                            }
+                            if (isNaN(collected.first().content))
+                                return message.channel.send(
+                                    "❌ **Not a number! Please try again.**"
+                                );
+
                             const index = collected.first().content;
                             // console.log(songList[index - 1]);
                             // console.log(songChoices[index - 1].id);
                             const res = await youtube.videos.list({
-                                part: "snippet,contentDetails",
+                                part: "snippet,contentDetails,statistics",
                                 id: songChoices[index - 1].id,
                                 auth: process.env.YT_API,
                             });
                             const songURL = `https://www.youtube.com/watch?v=${res.data.items[0].id}`;
                             server.queue.push({
                                 song: songURL,
+                                info: {
+                                    channelTitle:
+                                        res.data.items[0].snippet.channelTitle,
+                                    totalViews:
+                                        res.data.items[0].statistics.viewCount,
+                                },
                                 title: res.data.items[0].snippet.title,
                                 thumbnail:
                                     res.data.items[0].snippet.thumbnails.medium
@@ -135,6 +160,9 @@ module.exports = {
                             console.log(`Timeout: ${collected.size}`);
                             msg.delete();
                         });
+                    message.reply(
+                        "Please type the number of your choice, type `cancel` to exit."
+                    );
                 });
             }
         } else

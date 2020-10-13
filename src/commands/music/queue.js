@@ -15,7 +15,10 @@ module.exports = {
         if (!bot.servers[message.guild.id])
             bot.servers[message.guild.id] = {
                 name: message.guild.name,
-                loop: false,
+                loop: {
+                    song: false,
+                    queue: false,
+                },
                 queue: [],
             };
 
@@ -59,7 +62,39 @@ module.exports = {
                 songList.push(song);
             });
 
-            // console.log(songList);
+            // Sets Loop message
+            let loopMessage;
+            if (server.loop.song && server.loop.queue)
+                loopMessage = "Song & Queue";
+            else if (server.loop.song) loopMessage = "Song";
+            else if (server.loop.queue) loopMessage = "Queue";
+            else loopMessage = "Disabled";
+
+            // Get total duration of the queue
+            const totalSongs = server.queue.length - 1;
+            let footerMessage = "";
+            if (server.queue.length > 1) {
+                // Fetches all the durations first
+                const durations = [];
+                server.queue.slice(1).forEach((item) => {
+                    durations.push(item.duration);
+                });
+
+                // Then adds all of them
+                const totalDuration = durations.reduce((a, b) => a + b);
+
+                // Then convert
+                const convertedDuration = convertDuration(
+                    isNaN(totalDuration)
+                        ? totalDuration.duration
+                        : totalDuration
+                );
+
+                // Then set the message
+                footerMessage = `${totalSongs} song${
+                    totalSongs === 1 ? "" : "s"
+                } in queue | Total Length: ${convertedDuration}`;
+            }
 
             const embeds = [];
             const pages = Math.ceil(server.queue.length / 10); // Rounds off to the smallest interger greater than or equal to its numeric argument.
@@ -92,11 +127,10 @@ module.exports = {
                 .setDeleteOnTimeout(true)
                 // Methods below are for customising all embeds
                 .setTitle(
-                    `Music Queue for ${message.guild.name} | Loop is: ${
-                        server.loop ? "Enabled" : "Disabled"
-                    }`
+                    `Music Queue for ${message.guild.name} | Loop mode: ${loopMessage}`
                 )
                 .setColor(colors.Lavander_Purple)
+                .setFooter(footerMessage)
                 .build();
         }
     },

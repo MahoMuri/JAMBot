@@ -9,10 +9,10 @@ let channelsCache = {
     connected: false,
 };
 module.exports = {
-    name: "play",
-    aliases: ["p", "resume"],
+    name: "playfirst",
+    aliases: ["pf"],
     category: "music",
-    description: "Plays the song.",
+    description: "Puts song at the top of the queue and plays it.",
     usage: ["`-<command | alias> [YouTube link | Search query]`"],
     async run(bot, message, args) {
         let connection;
@@ -49,13 +49,6 @@ module.exports = {
                     return message.channel.send(
                         "**The Music Queue Is Empty! Use `-play` to add more!**"
                     );
-                else if (server.dispatcher) {
-                    server.dispatcher.resume();
-                    const embed = new MessageEmbed()
-                        .setDescription("**▶ Playing!**")
-                        .setColor(colors.Green);
-                    message.channel.send(embed);
-                }
             } else
                 try {
                     message.channel.send(`${ytreply}\`${song}\``);
@@ -93,7 +86,7 @@ module.exports = {
                             id: songURLs[0].id,
                             auth: process.env.YT_API,
                         });
-                        server.queue.push({
+                        server.queue.unshift({
                             song: songURLs[0].url,
                             info: {
                                 channelTitle:
@@ -148,19 +141,44 @@ module.exports = {
                                         views: playlist.view_count,
                                         thumbnail: playlist.thumbnail_url,
                                     };
-                                    playlist.videos.forEach((item) => {
-                                        server.queue.push({
-                                            song: item.url,
-                                            info: {
-                                                channelTitle: playlist.author,
-                                                totalViews: playlist.view_count,
-                                            },
-                                            title: item.title,
-                                            thumbnail: item.thumbnail_url,
-                                            owner: message.author,
-                                            duration: item.milis_length / 1000,
+                                    if (server.queue.length !== 0)
+                                        playlist.videos
+                                            .reverse()
+                                            .forEach((item) => {
+                                                server.queue.unshift({
+                                                    song: item.url,
+                                                    info: {
+                                                        channelTitle:
+                                                            playlist.author,
+                                                        totalViews:
+                                                            playlist.view_count,
+                                                    },
+                                                    title: item.title,
+                                                    thumbnail:
+                                                        item.thumbnail_url,
+                                                    owner: message.author,
+                                                    duration:
+                                                        item.milis_length /
+                                                        1000,
+                                                });
+                                            });
+                                    else
+                                        playlist.videos.forEach((item) => {
+                                            server.queue.push({
+                                                song: item.url,
+                                                info: {
+                                                    channelTitle:
+                                                        playlist.author,
+                                                    totalViews:
+                                                        playlist.view_count,
+                                                },
+                                                title: item.title,
+                                                thumbnail: item.thumbnail_url,
+                                                owner: message.author,
+                                                duration:
+                                                    item.milis_length / 1000,
+                                            });
                                         });
-                                    });
                                 })
                                 .catch(console.error);
                             // console.log(server.queue[0]);
@@ -199,7 +217,7 @@ module.exports = {
                                 id: url.searchParams.get("v"),
                                 auth: process.env.YT_API,
                             });
-                            server.queue.push({
+                            server.queue.unshift({
                                 song,
                                 info: {
                                     channelTitle:
@@ -239,16 +257,8 @@ module.exports = {
                         }
                     } // End of parameter check
 
-                    // Checks for instance of server dispatcher
-                    if (!server.dispatcher)
-                        // Execute this if no dispatcher is found
-                        play(connection, message, server, bot);
-                    else if (server.dispatcher._writableState.finished)
-                        // Execute this if the dispatcher finished the readstream (the queue is finished)
-                        play(connection, message, server, bot);
-                    else if (server.dispatcher._writableState.ended)
-                        // Execute this if the dispatcher ended the writestream (the bot left the channel)
-                        play(connection, message, server, bot);
+                    // Since playfirst skips to the song recently queued, it calls the play function no matter what.
+                    play(connection, message, server, bot);
                 } catch (error) {
                     message.channel.send(
                         "❌ **Error: Something went wrong, please contact a member of the Tech Dev team for assistance!**"
