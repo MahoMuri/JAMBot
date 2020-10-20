@@ -71,11 +71,11 @@ function play(connection, message, server, bot, jump, seek) {
     );
 
     server.dispatcher.on("start", () => {
-        // console.log("Playing Music!");
-        if (bot.messageCache.length !== 0) {
-            message.channel.messages.delete(bot.messageCache[0]);
-            bot.messageCache.shift();
-        }
+        console.log("Playing Music!");
+        if (bot.embedMessage)
+            if (server.channel.text.messages.resolve(bot.embedMessage))
+                server.channel.text.messages.delete(bot.embedMessage);
+
         const embed = new MessageEmbed()
             .setAuthor("Now Playing:", bot.logo)
             .setColor(colors.Turquoise)
@@ -87,21 +87,24 @@ function play(connection, message, server, bot, jump, seek) {
                 )}\`\nRequested by: ${server.queue[index].owner}`
             )
             .setThumbnail(server.queue[index].thumbnail);
-        message.channel.send(embed).then((msg) => {
-            bot.messageCache.push(msg.id);
+        server.channel.text.send(embed).then((msg) => {
+            bot.embedMessage = msg.id;
         });
     });
 
     server.dispatcher.on("finish", async () => {
+        // If both loops are false
         if (!server.loop.queue && !server.loop.song) {
             await server.queue.shift();
             console.log("Stopped Playing!");
         } else if (server.loop.queue)
             if (!server.loop.next && !server.loop.song) {
+                // If Loop song is disabled and Next is not invoked
                 const lastSong = server.queue[index];
                 server.queue.shift();
                 server.queue.push(lastSong);
             } else if (server.loop.next) {
+                // If next is invoked
                 const lastSong = server.queue[index];
                 server.queue.shift();
                 server.queue.push(lastSong);
@@ -112,9 +115,13 @@ function play(connection, message, server, bot, jump, seek) {
     });
 
     server.dispatcher.on("error", () => {
-        message.channel.send(
-            "❌ **Could not play song! Video unavailable, skipping to the next song.**"
-        );
+        message.channel
+            .send(
+                "❌ **Could not play song! Video unavailable, skipping to the next song.**"
+            )
+            .then((msg) => {
+                msg.delete({ timeout: 5000 });
+            });
         server.queue.shift();
         if (server.queue[index]) play(connection, message, server, bot);
     });
@@ -123,7 +130,8 @@ function play(connection, message, server, bot, jump, seek) {
 function convertDuration(seconds) {
     const parsed = parseSecs(seconds);
     let duration;
-    if (parsed.hours) duration = sf.convert(seconds).format("H:MM:SS");
+    if (parsed.days) duration = sf.convert(seconds).format("D:HH:MM:SS");
+    else if (parsed.hours) duration = sf.convert(seconds).format("H:MM:SS");
     else duration = sf.convert(seconds).format("M:SS");
 
     return duration;
@@ -139,6 +147,71 @@ function convertISO(iso) {
     return duration;
 }
 
+async function joinVC(bot, message) {
+    let connection;
+    if (!bot.servers[message.guild.id])
+        bot.servers[message.guild.id] = {
+            name: message.guild.name,
+            loop: {
+                song: false,
+                queue: false,
+            },
+            queue: [],
+        };
+
+    const server = await bot.servers[message.guild.id];
+
+    const connectedChannel = bot.voice.connections.map(
+        (connection) => connection.channel
+    );
+    const guildCheck = bot.voice.connections.map(
+        (connection) => connection.channel.guild.id
+    );
+    // console.log(guildCheck);
+
+    if (!guildCheck.includes(message.guild.id)) {
+        connection = await message.member.voice.channel.join();
+        server.channel = {
+            text: message.channel,
+            voice: connection.channel,
+        };
+    } else if (!connectedChannel.includes(message.member.voice.channel)) {
+        const guilds = connectedChannel.map((channel) => {
+            let servers = {};
+            const guild = channel.guild.name;
+            const members = channel.members.map(
+                (member) => member.user.username
+            );
+            servers = {
+                guild,
+                members: members.filter((name) => name !== bot.user.username),
+            };
+            return servers;
+        });
+
+        const guild = guilds.find(
+            (member) => member.guild === message.guild.name
+        );
+
+        console.log(guild);
+
+        if (guild && guild.members.length === 0) {
+            connection = await message.member.voice.channel.join();
+            server.channel = {
+                text: message.channel,
+                voice: connection.channel,
+            };
+        } else if (guild && guild.members.length > 0) connection = false;
+    } else {
+        connection = await message.member.voice.channel.join();
+        server.channel = {
+            text: message.channel,
+            voice: connection.channel,
+        };
+    }
+    return connection;
+}
+
 module.exports = {
     getMember,
     formatDate,
@@ -147,4 +220,5 @@ module.exports = {
     play,
     convertDuration,
     convertISO,
+    joinVC,
 };

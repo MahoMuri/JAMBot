@@ -85,6 +85,7 @@ module.exports = {
                         .then(async (collected) => {
                             if (collected.first().content === "cancel") {
                                 message.react("👌");
+                                bot.messageCache.push(collected.first());
                                 return message.channel.send(
                                     "✅ **Cancelled!**"
                                 );
@@ -122,6 +123,7 @@ module.exports = {
                             });
                             // console.log(server.queue[0]);
 
+                            await msg.delete();
                             // Sends confirmation for Qeueue
                             const embed = new MessageEmbed()
                                 .setTitle("Song added to the Queue!")

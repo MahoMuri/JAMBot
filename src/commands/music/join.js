@@ -16,6 +16,8 @@ module.exports = {
                     queue: [],
                 };
 
+            const server = await bot.servers[message.guild.id];
+
             const connectedChannel = bot.voice.connections.map(
                 (connection) => connection.channel
             );
@@ -26,13 +28,14 @@ module.exports = {
 
             if (!guildCheck.includes(message.guild.id)) {
                 const connection = await message.member.voice.channel.join();
-                message.channel.send(
-                    `✅ **Joined ${connection.channel.name} Voice Channel!**`
-                );
+                server.channel = {
+                    text: message.channel,
+                    voice: connection.channel,
+                };
             } else if (
                 !connectedChannel.includes(message.member.voice.channel)
             ) {
-                const members = connectedChannel.map((channel) => {
+                const guilds = connectedChannel.map((channel) => {
                     let servers = {};
                     const guild = channel.guild.name;
                     const members = channel.members.map(
@@ -46,33 +49,33 @@ module.exports = {
                     };
                     return servers;
                 });
-                console.log(members);
-                members.forEach(async (member) => {
-                    if (
-                        member.guild === message.guild.name &&
-                        member.members.length === 0
-                    ) {
-                        const connection = await message.member.voice.channel.join();
-                        message.channel.send(
-                            `✅ **Joined ${connection.channel.name} Voice Channel!**`
-                        );
-                    } else if (
-                        member.guild === message.guild.name &&
-                        member.members.length > 0
-                    )
-                        return message.channel.send(
-                            "❌ **I'm already being used in a different channel!**"
-                        );
-                });
+
+                const guild = guilds.find(
+                    (member) => member.guild === message.guild.name
+                );
+
+                console.log(guild);
+
+                if (guild && guild.members.length === 0) {
+                    const connection = await message.member.voice.channel.join();
+                    server.channel = {
+                        text: message.channel,
+                        voice: connection.channel,
+                    };
+                } else if (guild && guild.members.length > 0)
+                    return message.channel.send(
+                        "❌ **I'm already being used in a different channel!**"
+                    );
             } else {
                 const connection = await message.member.voice.channel.join();
-                message.channel.send(
-                    `✅ **Joined ${connection.channel.name}!**`
-                );
+                server.channel = {
+                    text: message.channel,
+                    voice: connection.channel,
+                };
             }
         } else
             return message.channel.send(
-                "❌ **Please join a Voice Channel first!**"
+                "❌ **You're not in a Voice Channel, Please join one first!**"
             );
     },
 };

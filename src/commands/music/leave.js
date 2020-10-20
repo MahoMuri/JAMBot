@@ -7,21 +7,23 @@ module.exports = {
     async run(bot, message) {
         if (message.member.voice.channel) {
             const server = await bot.servers[message.guild.id];
-            if (!server.dispatcher) {
-                server.queue.length = 0;
-                message.member.voice.channel.leave();
-                console.log("No Server\n", server);
-                message.channel.send("**👋 Successfully Disconnected!**");
-            } else if (server.dispatcher) {
+            if (!server) message.member.voice.channel.leave();
+            else if (!server.dispatcher) {
+                server.queue.splice(0, server.queue.length);
+                server.channel.voice.leave();
+            } else if (
+                server.dispatcher &&
+                server.channel.text === message.channel
+            ) {
                 await server.dispatcher.end();
-                server.queue.length = 0;
-                console.log("Server\n", server.queue);
-                message.member.voice.channel.leave();
-                message.channel.send("**👋 Successfully Disconnected!**");
+                server.queue.splice(0, server.queue.length);
+                server.channel.voice.leave();
             }
         } else
-            return message.channel.send(
-                "**❌ You're not in a voice channel!**"
-            );
+            return message.channel
+                .send("**❌ You're not in a voice channel!**")
+                .then((msg) => {
+                    bot.messageCache.push(msg.id);
+                });
     },
 };

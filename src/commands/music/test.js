@@ -1,6 +1,7 @@
 const { MessageEmbed } = require("discord.js");
 const { google } = require("googleapis");
 const Entities = require("html-entities").AllHtmlEntities;
+const ms = require("ms");
 const timer = require("timer");
 
 const colors = require("../../../functions");
@@ -35,10 +36,6 @@ module.exports = {
             .slice(1)
             .reduce((a, b) => a.duration + b.duration);
 
-        console.log(
-            convertDuration(
-                isNaN(totalDuration) ? totalDuration.duration : totalDuration
-            )
-        );
+        console.log(ms("3:20"));
     },
 };

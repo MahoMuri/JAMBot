@@ -120,6 +120,7 @@ module.exports = {
             // Creates and Builds new embed for pagination.
             new Pagination.Embeds()
                 .setArray(embeds)
+                .setAuthorizedUsers(message.author.id)
                 .setChannel(message.channel)
                 .setPageIndicator(true)
                 .setPage(1)
