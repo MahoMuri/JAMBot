@@ -7,8 +7,7 @@ module.exports = {
     async run(bot, message) {
         if (message.member.voice.channel) {
             const server = await bot.servers[message.guild.id];
-            if (!server) message.member.voice.channel.leave();
-            else if (!server.dispatcher) {
+            if (!server.dispatcher) {
                 server.queue.splice(0, server.queue.length);
                 server.channel.voice.leave();
             } else if (

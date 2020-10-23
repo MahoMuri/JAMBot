@@ -17,16 +17,6 @@ module.exports = {
         const entities = new Entities();
 
         if (message.member.voice.channel) {
-            if (!bot.servers[message.guild.id])
-                bot.servers[message.guild.id] = {
-                    name: message.guild.name,
-                    loop: {
-                        song: false,
-                        queue: false,
-                    },
-                    queue: [],
-                };
-
             const server = await bot.servers[message.guild.id];
             const connection = await message.member.voice.channel.join();
 

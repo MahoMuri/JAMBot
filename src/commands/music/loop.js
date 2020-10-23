@@ -10,15 +10,6 @@ module.exports = {
     usage: ["`-<command | alias> `"],
     async run(bot, message, args, prefix) {
         if (message.member.voice.channel) {
-            if (!bot.servers[message.guild.id])
-                bot.servers[message.guild.id] = {
-                    name: message.guild.name,
-                    loop: {
-                        song: false,
-                        queue: false,
-                    },
-                    queue: [],
-                };
             const server = await bot.servers[message.guild.id];
             if (server.queue.length === 0)
                 return message.channel.send(
