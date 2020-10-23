@@ -1,4 +1,4 @@
-node_modules
+.env
 .templates
 template.config.js
-
+node_modules
