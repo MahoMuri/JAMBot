@@ -66,15 +66,18 @@ function play(connection, message, server, bot, jump, seek) {
         ytdl(server.queue[index].song.toString(), {
             quality: "highestaudio",
             highWaterMark: 1 << 25,
-        }),
-        { seek: seekTime }
+        })
     );
 
     server.dispatcher.on("start", () => {
         console.log("Playing Music!");
         if (bot.embedMessage)
-            if (server.channel.text.messages.resolve(bot.embedMessage))
-                server.channel.text.messages.delete(bot.embedMessage);
+            if (!server.channel.text.deleted) {
+                if (server.channel.text.messages.resolve(bot.embedMessage))
+                    server.channel.text.messages
+                        .delete(bot.embedMessage)
+                        .catch(console.error);
+            } else bot.embedMessage = null;
 
         const embed = new MessageEmbed()
             .setAuthor("Now Playing:", bot.logo)
@@ -114,7 +117,8 @@ function play(connection, message, server, bot, jump, seek) {
         if (server.queue[index]) play(connection, message, server, bot);
     });
 
-    server.dispatcher.on("error", () => {
+    server.dispatcher.on("error", (err) => {
+        console.log(err);
         message.channel
             .send(
                 "❌ **Could not play song! Video unavailable, skipping to the next song.**"

@@ -53,7 +53,9 @@ module.exports = {
             } else
                 try {
                     await message.channel.send(`${ytreply}\`${song}\``);
-                    youtube(song, message, connection, server, bot);
+                    youtube(song, message, connection, server, bot, {
+                        playnext: true,
+                    });
                 } catch (error) {
                     message.channel.send(
                         "❌ **Error: Something went wrong, please contact a member of the Tech Dev team for assistance!**"

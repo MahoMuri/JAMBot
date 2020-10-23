@@ -12,7 +12,7 @@ module.exports = {
         const server = await bot.servers[message.guild.id];
 
         if (server.dispatcher) {
-            server.dispatcher.pause();
+            server.dispatcher.pause(true);
             const embed = new MessageEmbed()
                 .setDescription("**⏸ Paused!**")
                 .setColor(colors.Green);

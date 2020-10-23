@@ -58,7 +58,9 @@ async function _YouTube(song, message, connection, server, bot, options) {
                 owner: message.author,
                 duration: convertISO(res.data.items[0].contentDetails.duration),
             };
-            if (options.playnext) server.queue.unshift(track);
+
+            // Checks options for method of putting song/s to the queue
+            if (options.playnext) server.queue.splice(1, 0, track);
             else if (options.playfirst) server.queue.unshift(track);
             else server.queue.push(track);
 
@@ -121,18 +123,20 @@ async function _YouTube(song, message, connection, server, bot, options) {
                             };
                             return trackInfo;
                         });
+
+                        // Checks options for method of putting song/s to the queue
                         if (options.playnext) {
                             const nowPlaying = server.queue[0];
                             tracks.reverse().forEach((track) => {
                                 server.queue.unshift(track);
                             });
-                            server.queue.unshift(nowPlaying);
+                            server.queue.splice(0, 0, nowPlaying);
                         } else if (options.playfirst) {
                             const nowPlaying = server.queue[0];
                             tracks.reverse().forEach((track) => {
                                 server.queue.unshift(track);
                             });
-                            server.queue.unshift(nowPlaying);
+                            server.queue.splice(0, 0, nowPlaying);
                         } else
                             tracks.forEach((track) => {
                                 server.queue.push(track);
@@ -208,8 +212,10 @@ async function _YouTube(song, message, connection, server, bot, options) {
                         res.data.items[0].contentDetails.duration
                     ),
                 };
-                if (options.playnext) server.queue.unshift(track);
-                else if (options.playfirst) server.queue.unshift(track);
+
+                // Checks options for method of putting song/s to the queue
+                if (options.playnext) server.queue.splice(1, 0, track);
+                else if (options.playfirst) server.queue.splice(1, 0, track);
                 else server.queue.push(track);
 
                 const embed = new MessageEmbed()
