@@ -4,29 +4,15 @@ const colors = require("../../../colors.json");
 const { joinVC } = require("../../../functions");
 const youtube = require("../../fetchers/youtube");
 
-const channelsCache = {
-    connected: false,
-};
 let connection;
 module.exports = {
     name: "play",
     aliases: ["p", "resume"],
     category: "music",
-    description: "Plays the song.",
-    usage: ["`-<command | alias> [YouTube link | Search query]`"],
+    description: "Plays the song or from a YouTube Link or query.",
+    usage: ["`-<command | alias> < YouTube link | Search query >`"],
     async run(bot, message, args) {
         const ytreply = "**🔎 Searching YouTube for  **";
-
-        if (!bot.servers[message.guild.id])
-            bot.servers[message.guild.id] = {
-                name: message.guild.name,
-                channel: message.channel,
-                loop: {
-                    song: false,
-                    queue: false,
-                },
-                queue: [],
-            };
 
         const server = bot.servers[message.guild.id];
 
@@ -46,7 +32,7 @@ module.exports = {
                     return message.channel.send(
                         "**The Music Queue Is Empty! Use `-play` to add more!**"
                     );
-                else if (server.dispatcher) {
+                else if (server.dispatcher.paused) {
                     server.dispatcher.resume();
                     const embed = new MessageEmbed()
                         .setDescription("**▶ Playing!**")

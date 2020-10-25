@@ -10,24 +10,17 @@ module.exports = {
     aliases: ["q"],
     category: "music",
     description: "Displays the queue of this server",
-    usage: ["`-<command | alias> `"],
-    async run(bot, message) {
-        if (!bot.servers[message.guild.id])
-            bot.servers[message.guild.id] = {
-                name: message.guild.name,
-                loop: {
-                    song: false,
-                    queue: false,
-                },
-                queue: [],
-            };
-
+    usage: ["`-<command | alias>`"],
+    async run(bot, message, args, prefix) {
         const server = await bot.servers[message.guild.id];
-        if (server.queue.length === 0)
-            message.channel.send(
-                "**The Music Queue Is Empty! Use `-play` to add more!**"
-            );
-        else if (server.queue.length > 0) {
+        if (server.queue.length === 0) {
+            const embed = new MessageEmbed()
+                .setDescription(
+                    `**The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
+                )
+                .setColor(colors.Red);
+            message.channel.send(embed);
+        } else if (server.queue.length > 0) {
             // Sets the format for the Music queue to be displayed in MessageEmbed#setDescription
             const songList = [];
             server.queue.forEach((item, iterator) => {

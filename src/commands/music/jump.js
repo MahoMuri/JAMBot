@@ -9,16 +9,19 @@ module.exports = {
     aliases: ["jmp"],
     category: "music",
     description: "Jumps to the selected song in the queue.",
-    usage: ["`-<command | alias> `"],
+    usage: ["`-<command | alias> < Number of song >`"],
     async run(bot, message, args, prefix) {
         if (message.member.voice.channel) {
             const server = await bot.servers[message.guild.id];
             const connection = await message.member.voice.channel.join();
-            if (server.queue.length === 0)
-                message.channel.send(
-                    `**The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
-                );
-            else if (isNaN(args[0]))
+            if (server.queue.length === 0) {
+                const embed = new MessageEmbed()
+                    .setDescription(
+                        `**The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
+                    )
+                    .setColor(colors.Red);
+                message.channel.send(embed);
+            } else if (isNaN(args[0]))
                 return message.channel.send("❌ **Error, not a number!**");
             else {
                 message.react("👌");

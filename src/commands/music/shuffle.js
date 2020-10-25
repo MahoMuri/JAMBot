@@ -9,24 +9,17 @@ module.exports = {
     category: "music",
     description: "Shuffles the song",
     usage: ["`-<command | alias> `"],
-    async run(bot, message) {
-        if (!bot.servers[message.guild.id])
-            bot.servers[message.guild.id] = {
-                name: message.guild.name,
-                loop: {
-                    song: false,
-                    queue: false,
-                },
-                queue: [],
-            };
-
+    async run(bot, message, args, prefix) {
         const server = await bot.servers[message.guild.id];
 
-        if (server.queue.length === 0)
-            message.channel.send(
-                "**The Music Queue Is Empty! Use `_play` to add more!**"
-            );
-        else {
+        if (server.queue.length === 0) {
+            const embed = new MessageEmbed()
+                .setDescription(
+                    `**The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
+                )
+                .setColor(colors.Red);
+            message.channel.send(embed);
+        } else {
             message.react("🔀");
             const nowPlaying = server.queue[0];
             server.queue = shuffle(server.queue.slice(1));

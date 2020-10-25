@@ -52,9 +52,18 @@ module.exports = (bot) => {
         // If a command is finally found, run the command
         if (command) {
             bot.messageCache.push(message.id);
-            if (!bot.bind[message.guild.id])
-                bot.bind[message.guild.id] = {
-                    msg: message,
+
+            if (!bot.servers[message.guild.id])
+                bot.servers[message.guild.id] = {
+                    name: message.guild.name,
+                    channel: {
+                        text: message.channel,
+                    },
+                    loop: {
+                        song: false,
+                        queue: false,
+                    },
+                    queue: [],
                 };
             command.run(bot, message, args, prefix);
         }

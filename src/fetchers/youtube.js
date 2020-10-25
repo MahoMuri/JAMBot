@@ -6,10 +6,12 @@ const youtube = google.youtube("v3");
 const colors = require("../../colors.json");
 const { play, convertISO, addCommas } = require("../../functions");
 
+const YTURL = "https://www.youtube.com/watch?v=";
+
 async function _YouTube(song, message, connection, server, bot, options) {
     try {
         // First check if song is a search query
-        const checkWord = "https://www.youtube.com";
+        const checkWord = "https://";
         if (!song.toString().includes(checkWord)) {
             const songURLs = [];
 
@@ -35,7 +37,7 @@ async function _YouTube(song, message, connection, server, bot, options) {
 
                     res.data.items.forEach((item) => {
                         songURLs.push({
-                            url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+                            url: `${YTURL}${item.id.videoId}`,
                             id: item.id.videoId,
                         });
                     });
@@ -200,7 +202,7 @@ async function _YouTube(song, message, connection, server, bot, options) {
                 }
 
                 const track = {
-                    song,
+                    song: `${YTURL}${res.data.items[0].id}`,
                     info: {
                         channelTitle: res.data.items[0].snippet.channelTitle,
                         totalViews: res.data.items[0].statistics.viewCount,
@@ -215,13 +217,13 @@ async function _YouTube(song, message, connection, server, bot, options) {
 
                 // Checks options for method of putting song/s to the queue
                 if (options.playnext) server.queue.splice(1, 0, track);
-                else if (options.playfirst) server.queue.splice(1, 0, track);
+                else if (options.playfirst) server.queue.unshift(track);
                 else server.queue.push(track);
 
                 const embed = new MessageEmbed()
                     .setTitle("Song added to the Queue!")
                     .setAuthor(
-                        `${message.author}`,
+                        `${message.author.username}`,
                         message.author.displayAvatarURL()
                     )
                     .setDescription(
@@ -239,6 +241,8 @@ async function _YouTube(song, message, connection, server, bot, options) {
                 message.channel.send(embed);
             }
         } // End of parameter check
+
+        console.log(server.queue);
 
         // Checks for instance of server dispatcher
         if (!server.dispatcher)

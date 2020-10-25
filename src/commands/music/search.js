@@ -4,8 +4,10 @@ const Entities = require("html-entities").AllHtmlEntities;
 const ms = require("ms");
 
 const colors = require("../../../colors.json");
-const { play, convertISO } = require("../../../functions");
+const { joinVC } = require("../../../functions");
+const youTube = require("../../fetchers/youtube");
 
+let connection;
 module.exports = {
     name: "search",
     aliases: ["s"],
@@ -15,11 +17,18 @@ module.exports = {
     async run(bot, message, args) {
         const youtube = google.youtube("v3");
         const entities = new Entities();
+        const server = await bot.servers[message.guild.id];
 
-        if (message.member.voice.channel) {
-            const server = await bot.servers[message.guild.id];
-            const connection = await message.member.voice.channel.join();
+        if (message.member.voice.channel)
+            await joinVC(bot, message).then((connected) => {
+                connection = connected;
+            });
+        else
+            return message.channel.send(
+                "❌ **Please join a Voice Channel first!**"
+            );
 
+        if (connection) {
             const song = args.join(" ").toString();
             if (!song)
                 return message.channel.send(
@@ -65,101 +74,59 @@ module.exports = {
                     );
 
                 message.channel.send(embed).then((msg) => {
-                    const filter = (msg) => msg.author.id !== bot.user.id;
-                    msg.channel
-                        .awaitMessages(filter, {
-                            max: 1,
-                            time: ms("5m"),
-                            errors: ["time"],
-                        })
-                        .then(async (collected) => {
-                            if (collected.first().content === "cancel") {
-                                message.react("👌");
-                                bot.messageCache.push(collected.first());
-                                return message.channel.send(
-                                    "✅ **Cancelled!**"
-                                );
-                            }
-                            if (isNaN(collected.first().content))
-                                return message.channel.send(
-                                    "❌ **Not a number! Please try again.**"
-                                );
-
-                            const index = collected.first().content;
-                            // console.log(songList[index - 1]);
-                            // console.log(songChoices[index - 1].id);
-                            const res = await youtube.videos.list({
-                                part: "snippet,contentDetails,statistics",
-                                id: songChoices[index - 1].id,
-                                auth: process.env.YT_API,
-                            });
-                            const songURL = `https://www.youtube.com/watch?v=${res.data.items[0].id}`;
-                            server.queue.push({
-                                song: songURL,
-                                info: {
-                                    channelTitle:
-                                        res.data.items[0].snippet.channelTitle,
-                                    totalViews:
-                                        res.data.items[0].statistics.viewCount,
-                                },
-                                title: res.data.items[0].snippet.title,
-                                thumbnail:
-                                    res.data.items[0].snippet.thumbnails.medium
-                                        .url,
-                                owner: message.author,
-                                duration: convertISO(
-                                    res.data.items[0].contentDetails.duration
-                                ),
-                            });
-                            // console.log(server.queue[0]);
-
-                            await msg.delete();
-                            // Sends confirmation for Qeueue
-                            const embed = new MessageEmbed()
-                                .setTitle("Song added to the Queue!")
-                                .setAuthor(
-                                    `${message.author.username}`,
-                                    message.author.displayAvatarURL()
-                                )
-                                .setDescription(
-                                    `[${res.data.items[0].snippet.title}](
-                                        ${songURL}
-                                    )`
-                                )
-                                .setThumbnail(
-                                    res.data.items[0].snippet.thumbnails.medium
-                                        .url
-                                )
-                                .setFooter(
-                                    `${bot.user.username} | MahoMuri`,
-                                    bot.user.displayAvatarURL()
-                                );
-                            message.channel.send(embed);
-
-                            // Checks for instance of server dispatcher
-                            if (!server.dispatcher)
-                                // Execute this if no dispatcher is found
-                                play(connection, message, server, bot);
-                            else if (server.dispatcher._writableState.finished)
-                                // Execute this if the dispatcher finished the readstream (the queue is finished)
-                                play(connection, message, server, bot);
-                            else if (server.dispatcher._writableState.ended)
-                                // Execute this if the dispatcher ended the writestream (the bot left the channel)
-                                play(connection, message, server, bot);
-                        })
-                        .catch((collected) => {
-                            console.log(collected);
-                            console.log(`Timeout: ${collected.size}`);
-                            msg.delete();
-                        });
-                    message.reply(
+                    msg.reply(
                         "Please type the number of your choice, type `cancel` to exit."
-                    );
+                    ).then((choice) => {
+                        const filter = (choice) =>
+                            !choice.author.bot && choice.author;
+                        choice.channel
+                            .awaitMessages(filter, {
+                                max: 1,
+                                time: ms("5m"),
+                                errors: ["time"],
+                            })
+                            .then(async (collected) => {
+                                if (collected.first().content === "cancel") {
+                                    message.react("👌");
+                                    bot.messageCache.push(collected.first());
+                                    await collected.first().delete();
+                                    await msg.delete();
+                                    await choice.delete();
+                                    return message.channel.send(
+                                        "✅ **Cancelled!**"
+                                    );
+                                }
+                                if (isNaN(collected.first().content))
+                                    return message.channel.send(
+                                        "❌ **Not a number! Please try again.**"
+                                    );
+
+                                const index = collected.first().content;
+                                console.log(songList[index - 1]);
+                                console.log(songChoices[index - 1].song);
+                                youTube(
+                                    songChoices[index - 1].song,
+                                    message,
+                                    connection,
+                                    server,
+                                    bot
+                                );
+                                // console.log(server.queue[0]);
+                                await collected.first().delete();
+                                await msg.delete();
+                                await choice.delete();
+                            })
+                            .catch((collected) => {
+                                console.log(collected);
+                                console.log(`Timeout: ${collected.size}`);
+                                choice.delete();
+                            });
+                    });
                 });
             }
         } else
             return message.channel.send(
-                "**❌ You're not in a voice channel!**"
+                "❌ **I'm being used in a different channel!**"
             );
     },
 };

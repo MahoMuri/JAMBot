@@ -1,27 +1,24 @@
+const { MessageEmbed } = require("discord.js");
+
+const colors = require("../../../colors.json");
+
 module.exports = {
     name: "next",
     aliases: ["n", "skip"],
     category: "music",
     description: "Skips to the next song",
     usage: ["`-<command | alias> `"],
-    async run(bot, message) {
-        if (!bot.servers[message.guild.id])
-            bot.servers[message.guild.id] = {
-                name: message.guild.name,
-                loop: {
-                    song: false,
-                    queue: false,
-                },
-                queue: [],
-            };
-
+    async run(bot, message, args, prefix) {
         const server = await bot.servers[message.guild.id];
 
-        if (!server.dispatcher)
-            return message.channel.send(
-                "**The Music Queue Is Empty! Use `-play` to add more!**"
-            );
-        else {
+        if (server.queue.length === 0) {
+            const embed = new MessageEmbed()
+                .setDescription(
+                    `**The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
+                )
+                .setColor(colors.Red);
+            message.channel.send(embed);
+        } else {
             await message.channel.send("**⏭ Skipping!**");
             server.dispatcher.end();
             server.loop.next = true;

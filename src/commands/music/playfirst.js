@@ -9,21 +9,11 @@ module.exports = {
     aliases: ["pf"],
     category: "music",
     description: "Puts song at the top of the queue and plays it.",
-    usage: ["`-<command | alias> [YouTube link | Search query]`"],
+    usage: ["`-<command | alias> < YouTube link | Search query >`"],
     async run(bot, message, args) {
         bot.messageCache.push(message.id);
         let connection;
         const ytreply = "**🔎 Searching YouTube for  **";
-
-        if (!bot.servers[message.guild.id])
-            bot.servers[message.guild.id] = {
-                name: message.guild.name,
-                loop: {
-                    song: false,
-                    queue: false,
-                },
-                queue: [],
-            };
 
         const server = bot.servers[message.guild.id];
 

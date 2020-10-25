@@ -14,16 +14,6 @@ module.exports = {
     description: "",
     usage: ["`-<command | alias> `"],
     async run(bot, message, ars, prefix) {
-        if (!bot.servers[message.guild.id])
-            bot.servers[message.guild.id] = {
-                name: message.guild.name,
-                loop: {
-                    song: false,
-                    queue: false,
-                },
-                queue: [],
-            };
-
         const server = await bot.servers[message.guild.id];
         const arr = [1, 2, 3, 4, 5];
         const arr2 = [6, 7, 8, 9, 10];

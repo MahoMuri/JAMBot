@@ -7,20 +7,10 @@ const { convertDuration, addCommas } = require(".././../../functions");
 module.exports = {
     name: "nowplaying",
     aliases: ["np"],
-    category: "",
-    description: "",
+    category: "music",
+    description: "Displays the currently playing Song.",
     usage: ["`-<command | alias> `"],
     run(bot, message, args, prefix) {
-        if (!bot.servers[message.guild.id])
-            bot.servers[message.guild.id] = {
-                name: message.guild.name,
-                loop: {
-                    song: false,
-                    queue: false,
-                },
-                queue: [],
-            };
-
         const server = bot.servers[message.guild.id];
         const index = 0;
 

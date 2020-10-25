@@ -65,6 +65,7 @@ function play(connection, message, server, bot, jump, seek) {
     server.dispatcher = connection.play(
         ytdl(server.queue[index].song.toString(), {
             quality: "highestaudio",
+            filter: "audioonly",
             highWaterMark: 1 << 25,
         })
     );
@@ -100,21 +101,22 @@ function play(connection, message, server, bot, jump, seek) {
         if (!server.loop.queue && !server.loop.song) {
             await server.queue.shift();
             console.log("Stopped Playing!");
-        } else if (server.loop.queue)
+        } else if (server.loop.queue) {
+            const lastSong = server.queue[0];
             if (!server.loop.next && !server.loop.song) {
                 // If Loop song is disabled and Next is not invoked
-                const lastSong = server.queue[index];
-                server.queue.shift();
+                await server.queue.shift();
                 server.queue.push(lastSong);
             } else if (server.loop.next) {
                 // If next is invoked
-                const lastSong = server.queue[index];
-                server.queue.shift();
+                await server.queue.shift();
                 server.queue.push(lastSong);
                 server.loop.next = false;
             }
+        }
 
         if (server.queue[index]) play(connection, message, server, bot);
+        else console.log("Queue is empty!");
     });
 
     server.dispatcher.on("error", (err) => {
@@ -128,6 +130,7 @@ function play(connection, message, server, bot, jump, seek) {
             });
         server.queue.shift();
         if (server.queue[index]) play(connection, message, server, bot);
+        else server.dispatcher.end();
     });
 }
 

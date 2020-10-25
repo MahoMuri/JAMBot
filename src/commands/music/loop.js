@@ -7,14 +7,19 @@ module.exports = {
     aliases: ["l"],
     category: "music",
     description: "Loops the queue",
-    usage: ["`-<command | alias> `"],
+    usage: ["`-<command | alias> < song | queue >`"],
     async run(bot, message, args, prefix) {
         if (message.member.voice.channel) {
             const server = await bot.servers[message.guild.id];
-            if (server.queue.length === 0)
-                return message.channel.send(
-                    "**The Music Queue Is Empty! Use `-play` to add more!**"
-                );
+            if (server.queue.length === 0) {
+                const embed = new MessageEmbed()
+                    .setDescription(
+                        `**The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
+                    )
+                    .setColor(colors.Red);
+                return message.channel.send(embed);
+            }
+
             if (args) {
                 const option = args.join(" ").toString();
                 option.toLowerCase();
