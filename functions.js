@@ -115,22 +115,30 @@ function play(connection, message, server, bot, jump, seek) {
             }
         }
 
-        if (server.queue[index]) play(connection, message, server, bot);
+        if (server.queue.length > 0 && server.queue[index] !== undefined)
+            play(connection, message, server, bot);
         else console.log("Queue is empty!");
     });
 
-    server.dispatcher.on("error", (err) => {
-        console.log(err);
-        message.channel
-            .send(
-                "❌ **Could not play song! Video unavailable, skipping to the next song.**"
-            )
-            .then((msg) => {
-                msg.delete({ timeout: 5000 });
-            });
-        server.queue.shift();
-        if (server.queue[index]) play(connection, message, server, bot);
-        else server.dispatcher.end();
+    server.dispatcher.on("error", (error) => {
+        console.log(error.message);
+        if (error.message.includes("Video unavailable")) {
+            message.channel
+                .send(
+                    "❌ **Could not play song! Video unavailable, skipping to the next song.**"
+                )
+                .then((msg) => {
+                    msg.delete({ timeout: 5000 });
+                });
+            server.queue.shift();
+            if (server.queue.length > 0 && server.queue[index] !== undefined)
+                play(connection, message, server, bot);
+        } else if (error.message.includes("Error parsing info:")) {
+            if (server.queue.length > 0 && server.queue[index] !== undefined)
+                play(connection, message, server, bot);
+        } else if (error.message.includes("Could not find player config"))
+            if (server.queue.length > 0 && server.queue[index] !== undefined)
+                play(connection, message, server, bot);
     });
 }
 
