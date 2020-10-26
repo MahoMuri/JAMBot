@@ -10,7 +10,7 @@ module.exports = {
         production: {
             user: "kaito",
             host: "192.168.1.10",
-            ref: "origin/master",
+            ref: "origin/main",
             repo: "git@github.com:MahoMuri/JAMBot.git",
             path: "/home/kaito/Discord-Bots/JAMBot",
             "post-deploy":
