@@ -13,6 +13,11 @@ module.exports = (bot) => {
             } else if (oldState.channel && !newState.channel) {
                 console.log("that one");
                 if (server && server.dispatcher) {
+                    if (server.loop.song || server.loop.queue)
+                        server.loop = {
+                            song: false,
+                            queue: false,
+                        };
                     if (server.dispatcher && server.queue.length !== 0) {
                         server.queue.length = 0;
                         server.dispatcher.end();
