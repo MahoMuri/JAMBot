@@ -15,10 +15,10 @@ module.exports = {
         if (server.queue.length === 0) {
             const embed = new MessageEmbed()
                 .setDescription(
-                    `**The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
+                    `**❌ The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
                 )
                 .setColor(colors.Red);
-            message.channel.send(embed);
+            return message.channel.send(embed);
         } else {
             message.react("🔀");
             const nowPlaying = server.queue[0];

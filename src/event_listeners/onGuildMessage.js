@@ -27,7 +27,17 @@ module.exports = (bot) => {
             );
         }
 
-        const prefix = prefixes[message.guild.id].prefix;
+        const lsprfxes = [
+            prefixes[message.guild.id].prefix,
+            `<@${bot.user.id}>`,
+            `<@&${bot.user.id}>`,
+            `<@!${bot.user.id}>`,
+        ];
+
+        const prefix = lsprfxes
+            .filter((prfx) => message.content.startsWith(prfx))
+            .join("");
+
         if (
             message.author.bot ||
             !message.guild ||
@@ -40,6 +50,9 @@ module.exports = (bot) => {
 
         const args = message.content.slice(prefix.length).trim().split(/ +/g);
         const cmd = args.shift().toLowerCase();
+
+        if (prefix.includes(bot.user.id) && cmd.length === 0)
+            message.channel.send("Hello");
 
         if (cmd.length === 0) return;
 
@@ -65,7 +78,7 @@ module.exports = (bot) => {
                     },
                     queue: [],
                 };
-            command.run(bot, message, args, prefix);
+            command.run(bot, message, args, lsprfxes[0]);
         }
     });
 };

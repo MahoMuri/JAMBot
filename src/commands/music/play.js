@@ -11,7 +11,7 @@ module.exports = {
     category: "music",
     description: "Plays the song or from a YouTube Link or query.",
     usage: ["`-<command | alias> < YouTube link | Search query >`"],
-    async run(bot, message, args) {
+    async run(bot, message, args, prefix) {
         const ytreply = "**🔎 Searching YouTube for  **";
 
         const server = bot.servers[message.guild.id];
@@ -28,11 +28,14 @@ module.exports = {
         if (connection) {
             const song = args.join(" ");
             if (!song) {
-                if (server.queue.length === 0)
-                    return message.channel.send(
-                        "**The Music Queue Is Empty! Use `-play` to add more!**"
-                    );
-                else if (server.dispatcher.paused) {
+                if (server.queue.length === 0) {
+                    const embed = new MessageEmbed()
+                        .setDescription(
+                            `**❌ The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
+                        )
+                        .setColor(colors.Red);
+                    return message.channel.send(embed);
+                } else if (server.dispatcher.paused) {
                     server.dispatcher.resume();
                     const embed = new MessageEmbed()
                         .setDescription("**▶ Playing!**")

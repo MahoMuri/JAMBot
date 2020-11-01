@@ -1,49 +1,54 @@
 const ms = require("ms");
 
 module.exports = (bot) => {
-    bot.on("voiceStateUpdate", async (oldState, newState) => {
+    bot.on("voiceStateUpdate", (oldState, newState) => {
         if (oldState.member.user === bot.user) {
             const server = bot.servers[newState.guild.id || oldState.guild.id];
+            const message = bot.bind[newState.guild.id || oldState.guild.id];
+
+            if (!message) return;
 
             if (!oldState.channel && newState.channel) {
                 console.log("this one");
-                server.channel.text.send(
+                message.msg.channel.send(
                     `✅ **Joined ${newState.channel.name} Channel!**`
                 );
             } else if (oldState.channel && !newState.channel) {
                 console.log("that one");
-                if (server) {
+                if (server && server.dispatcher) {
                     if (server.dispatcher && server.queue.length !== 0) {
-                        await server.queue.splice(0, server.queue.length);
-                        server.dispatcher.destroy();
+                        server.queue.length = 0;
+                        server.dispatcher.end();
                     } else if (server.queue.length !== 0)
-                        server.queue.splice(0, server.queue.length);
-                    server.channel.text.send(
+                        server.queue.length = 0;
+                    message.msg.channel.send(
                         "**👋 Successfully Disconnected!**"
                     );
-                    console.log(server.queue);
+                    console.log(
+                        "**👋 Successfully Disconnected!**",
+                        server.queue
+                    );
                 }
             } else if (
                 oldState.channel !== newState.channel &&
                 newState !== null
             )
-                if (server) {
+                if (server && server.dispatcher) {
                     if (server.dispatcher && server.queue.length !== 0) {
-                        await server.queue.splice(0, server.queue.length);
-                        server.dispatcher.destroy();
+                        server.queue.length = 0;
+                        server.dispatcher.end();
                     } else if (server.queue.length !== 0)
-                        server.queue.splice(0, server.queue.length);
-                    server.channel.text.send(
-                        "**👋 Successfully Disconnected!**"
+                        server.queue.length = 0;
+                    message.msg.channel.send(
+                        `✅ **Joined ${newState.channel.name} Channel!**`
                     );
-                    console.log(server.queue);
                 }
         } else if (
             oldState.member.user !== bot.user &&
             oldState.channel &&
             !newState.channel
         )
-            if (oldState)
+            if (oldState && oldState.channel)
                 setInterval(() => {
                     const members = oldState.channel.members.map(
                         (member) => member

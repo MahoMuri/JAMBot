@@ -5,10 +5,20 @@ const colors = require("../../../colors.json");
 module.exports = {
     name: "clean",
     aliases: ["cln"],
-    category: "music",
+    category: "general",
     description: "Cleans the channel of JAMBot's messages and commands.",
     usage: ["`-<command | alias>`"],
     async run(bot, message, args) {
+        if (!message.member.hasPermission("MANAGE_MESSAGES")) {
+            const embed = new MessageEmbed()
+                .setDescription("**❌ You cannot delete messages!**")
+                .setColor(colors.Red);
+            return message.channel.send(embed).then((msg) => {
+                if (message.channel.messages.resolve(msg.id))
+                    msg.delete({ timeout: 5000 }).catch(console.error);
+            });
+        }
+
         const MESSAGES = message.channel.messages.cache.filter(
             (m) => m.author.id === bot.user.id && m.id !== bot.embedMessage
         );

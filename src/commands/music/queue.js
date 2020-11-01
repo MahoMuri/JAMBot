@@ -16,10 +16,10 @@ module.exports = {
         if (server.queue.length === 0) {
             const embed = new MessageEmbed()
                 .setDescription(
-                    `**The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
+                    `**❌ The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
                 )
                 .setColor(colors.Red);
-            message.channel.send(embed);
+            return message.channel.send(embed);
         } else if (server.queue.length > 0) {
             // Sets the format for the Music queue to be displayed in MessageEmbed#setDescription
             const songList = [];

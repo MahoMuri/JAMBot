@@ -59,8 +59,8 @@ function addCommas(nStr) {
     return x1 + x2;
 }
 
-function play(connection, message, server, bot, jump, seek) {
-    const index = jump || 0;
+function play(connection, message, server, bot, seek) {
+    const index = 0;
     const seekTime = seek || 0;
     server.dispatcher = connection.play(
         ytdl(server.queue[index].song.toString(), {

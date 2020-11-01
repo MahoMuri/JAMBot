@@ -74,54 +74,60 @@ module.exports = {
                     );
 
                 message.channel.send(embed).then((msg) => {
-                    msg.reply(
-                        "Please type the number of your choice, type `cancel` to exit."
-                    ).then((choice) => {
-                        const filter = (choice) =>
-                            !choice.author.bot && choice.author;
-                        choice.channel
-                            .awaitMessages(filter, {
-                                max: 1,
-                                time: ms("5m"),
-                                errors: ["time"],
-                            })
-                            .then(async (collected) => {
-                                if (collected.first().content === "cancel") {
-                                    message.react("👌");
-                                    bot.messageCache.push(collected.first());
+                    msg.channel
+                        .send(
+                            `${message.author}, Please type the number of your choice, type \`cancel\` to exit.`
+                        )
+                        .then((choice) => {
+                            const filter = (choice) =>
+                                !choice.author.bot && choice.author;
+                            choice.channel
+                                .awaitMessages(filter, {
+                                    max: 1,
+                                    time: ms("5m"),
+                                    errors: ["time"],
+                                })
+                                .then(async (collected) => {
+                                    if (
+                                        collected.first().content === "cancel"
+                                    ) {
+                                        message.react("👌");
+                                        bot.messageCache.push(
+                                            collected.first()
+                                        );
+                                        await collected.first().delete();
+                                        await msg.delete();
+                                        await choice.delete();
+                                        return message.channel.send(
+                                            "✅ **Cancelled!**"
+                                        );
+                                    }
+                                    if (isNaN(collected.first().content))
+                                        return message.channel.send(
+                                            "❌ **Not a number! Please try again.**"
+                                        );
+
+                                    const index = collected.first().content;
+                                    console.log(songList[index - 1]);
+                                    console.log(songChoices[index - 1].song);
+                                    youTube(
+                                        songChoices[index - 1].song,
+                                        message,
+                                        connection,
+                                        server,
+                                        bot
+                                    );
+                                    // console.log(server.queue[0]);
                                     await collected.first().delete();
                                     await msg.delete();
                                     await choice.delete();
-                                    return message.channel.send(
-                                        "✅ **Cancelled!**"
-                                    );
-                                }
-                                if (isNaN(collected.first().content))
-                                    return message.channel.send(
-                                        "❌ **Not a number! Please try again.**"
-                                    );
-
-                                const index = collected.first().content;
-                                console.log(songList[index - 1]);
-                                console.log(songChoices[index - 1].song);
-                                youTube(
-                                    songChoices[index - 1].song,
-                                    message,
-                                    connection,
-                                    server,
-                                    bot
-                                );
-                                // console.log(server.queue[0]);
-                                await collected.first().delete();
-                                await msg.delete();
-                                await choice.delete();
-                            })
-                            .catch((collected) => {
-                                console.log(collected);
-                                console.log(`Timeout: ${collected.size}`);
-                                choice.delete();
-                            });
-                    });
+                                })
+                                .catch((collected) => {
+                                    console.log(collected);
+                                    console.log(`Timeout: ${collected.size}`);
+                                    choice.delete();
+                                });
+                        });
                 });
             }
         } else

@@ -29,7 +29,7 @@ module.exports = {
                     return message.channel.send("You must provide a prefix!");
 
                 prefixes[message.guild.id] = {
-                    prefixes: args[1],
+                    prefix: args[1],
                 };
 
                 fs.writeFileSync(
@@ -54,10 +54,10 @@ module.exports = {
             const pEmbed = new MessageEmbed()
                 .setColor(colors.Dark_Pastel_Blue)
                 .setTitle("Server's Prefix").setDescription(`**Prefix is \`${
-                prefixes[message.guild.id].prefixes
+                prefixes[message.guild.id].prefix
             }\`**
                 Type \`${
-                    prefixes[message.guild.id].prefixes
+                    prefixes[message.guild.id].prefix
                 }prefix set <prefix here>\` to change this server's prefix!`);
             message.channel.send(pEmbed);
         }
