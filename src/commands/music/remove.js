@@ -11,11 +11,11 @@ module.exports = {
     async run(bot, message, args, prefix) {
         const server = await bot.servers[message.guild.id];
 
-        if (message.member.voice.channel) {
-            if (args) {
-                const index = parseInt(args.join("")) - 1;
+        if (message.member.voice.channel)
+            if (args[0]) {
+                const index = parseInt(args[0]) - 1;
                 if (!isNaN(index))
-                    if (server && server.queue) {
+                    if (server && server.queue.length > 0) {
                         const toDelete = server.queue[index];
                         await server.queue.splice(index, 1);
                         const embed = new MessageEmbed()
@@ -38,8 +38,15 @@ module.exports = {
                         .setColor(colors.Red);
                     return message.channel.send(embed);
                 }
+            } else {
+                const embed = new MessageEmbed()
+                    .setDescription(
+                        "**❌ Please provide the number of the song in the queue!**"
+                    )
+                    .setColor(colors.Red);
+                return message.channel.send(embed);
             }
-        } else
+        else
             return message.channel.send(
                 "❌ **Please join a Voice Channel first!**"
             );

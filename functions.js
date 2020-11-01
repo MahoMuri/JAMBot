@@ -65,7 +65,6 @@ function play(connection, message, server, bot, seek) {
     server.dispatcher = connection.play(
         ytdl(server.queue[index].song.toString(), {
             quality: "highestaudio",
-            filter: "audioonly",
             highWaterMark: 1 << 25,
         })
     );

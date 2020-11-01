@@ -12,7 +12,14 @@ module.exports = {
         const server = await bot.servers[message.guild.id];
 
         if (message.member.voice.channel)
-            if (server && server.queue) {
+            if (server && server.queue.length === 0) {
+                const embed = new MessageEmbed()
+                    .setDescription(
+                        `**❌ The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
+                    )
+                    .setColor(colors.Red);
+                return message.channel.send(embed);
+            } else {
                 const queueLength = server.queue.length - 1;
                 server.queue.splice(1, server.queue.length - 1);
                 const embed = new MessageEmbed()
@@ -23,13 +30,6 @@ module.exports = {
                         }**`
                     );
                 message.channel.send(embed);
-            } else {
-                const embed = new MessageEmbed()
-                    .setDescription(
-                        `**❌ The Music Queue Is Empty! Use \`${prefix}play\` to add more!**`
-                    )
-                    .setColor(colors.Red);
-                return message.channel.send(embed);
             }
         else
             return message.channel.send(

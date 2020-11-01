@@ -4,13 +4,10 @@ module.exports = (bot) => {
     bot.on("voiceStateUpdate", (oldState, newState) => {
         if (oldState.member.user === bot.user) {
             const server = bot.servers[newState.guild.id || oldState.guild.id];
-            const message = bot.bind[newState.guild.id || oldState.guild.id];
-
-            if (!message) return;
 
             if (!oldState.channel && newState.channel) {
                 console.log("this one");
-                message.msg.channel.send(
+                server.channel.text.send(
                     `✅ **Joined ${newState.channel.name} Channel!**`
                 );
             } else if (oldState.channel && !newState.channel) {
@@ -21,14 +18,17 @@ module.exports = (bot) => {
                         server.dispatcher.end();
                     } else if (server.queue.length !== 0)
                         server.queue.length = 0;
-                    message.msg.channel.send(
+                    server.channel.text.send(
                         "**👋 Successfully Disconnected!**"
                     );
                     console.log(
                         "**👋 Successfully Disconnected!**",
                         server.queue
                     );
-                }
+                } else
+                    server.channel.text.send(
+                        "**👋 Successfully Disconnected!**"
+                    );
             } else if (
                 oldState.channel !== newState.channel &&
                 newState !== null
@@ -39,7 +39,7 @@ module.exports = (bot) => {
                         server.dispatcher.end();
                     } else if (server.queue.length !== 0)
                         server.queue.length = 0;
-                    message.msg.channel.send(
+                    server.channel.text.send(
                         `✅ **Joined ${newState.channel.name} Channel!**`
                     );
                 }
