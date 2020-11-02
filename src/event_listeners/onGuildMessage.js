@@ -38,12 +38,8 @@ module.exports = (bot) => {
             .filter((prfx) => message.content.startsWith(prfx))
             .join("");
 
-        if (
-            message.author.bot ||
-            !message.guild ||
-            !message.content.startsWith(prefix)
-        )
-            return;
+        if (message.author.bot || !message.guild || !prefix.length >= 1) return;
+
         // If message.member is uncached, cache it.
         if (!message.member)
             message.member = await message.guild.fetchMember(message);
