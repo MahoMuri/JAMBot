@@ -1,10 +1,11 @@
 const ms = require("ms");
 
+let timer;
+
 module.exports = (bot) => {
     bot.on("voiceStateUpdate", (oldState, newState) => {
+        const server = bot.servers[newState.guild.id || oldState.guild.id];
         if (oldState.member.user === bot.user) {
-            const server = bot.servers[newState.guild.id || oldState.guild.id];
-
             if (!oldState.channel && newState.channel) {
                 console.log("this one");
                 server.channel.text.send(
@@ -23,14 +24,16 @@ module.exports = (bot) => {
                         server.dispatcher.end();
                     } else if (server.queue.length !== 0)
                         server.queue.length = 0;
-                    server.channel.text.send(
-                        "**👋 Successfully Disconnected!**"
-                    );
+
+                    if (!server.channel.text.deleted)
+                        server.channel.text.send(
+                            "**👋 Successfully Disconnected!**"
+                        );
                     console.log(
                         "**👋 Successfully Disconnected!**",
                         server.queue
                     );
-                } else
+                } else if (!server.channel.text.deleted)
                     server.channel.text.send(
                         "**👋 Successfully Disconnected!**"
                     );
@@ -48,19 +51,18 @@ module.exports = (bot) => {
                         `✅ **Joined ${newState.channel.name} Channel!**`
                     );
                 }
-        } else if (
-            oldState.member.user !== bot.user &&
-            oldState.channel &&
-            !newState.channel
-        )
-            if (oldState && oldState.channel)
-                setInterval(() => {
+        } else if (oldState.channel && !newState.channel) {
+            if (server && server.channel.voice)
+                if (oldState && oldState.channel !== null) {
                     const members = oldState.channel.members.map(
                         (member) => member
                     );
                     if (members.length === 1)
                         if (members[0].user === bot.user)
-                            members[0].voice.channel.leave();
-                }, ms("5m"));
+                            timer = setTimeout(() => {
+                                server.channel.voice.leave();
+                            }, ms("5m"));
+                }
+        } else if (!oldState.channel && newState.channel) clearTimeout(timer);
     });
 };

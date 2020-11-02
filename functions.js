@@ -1,10 +1,10 @@
 const { stripIndents } = require("common-tags");
+const ytdl = require("discord-ytdl-core");
 const { MessageEmbed } = require("discord.js");
 const ms = require("ms");
 const parseSecs = require("parse-seconds");
 const sf = require("seconds-formater");
 const { parse } = require("tinyduration");
-const ytdl = require("ytdl-core");
 
 const colors = require("./colors.json");
 
@@ -62,12 +62,14 @@ function addCommas(nStr) {
 function play(connection, message, server, bot, seek) {
     const index = 0;
     const seekTime = seek || 0;
-    server.dispatcher = connection.play(
-        ytdl(server.queue[index].song.toString(), {
-            quality: "highestaudio",
-            highWaterMark: 1 << 25,
-        })
-    );
+    const stream = ytdl(server.queue[index].song.toString(), {
+        quality: "highestaudio",
+        opusEncoded: true,
+        highWaterMark: 1 << 25,
+    });
+    server.dispatcher = connection.play(stream, {
+        type: "opus",
+    });
 
     server.dispatcher.on("start", () => {
         console.log("Playing Music!");

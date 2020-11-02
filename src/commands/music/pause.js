@@ -11,10 +11,22 @@ module.exports = {
     async run(bot, message) {
         const server = await bot.servers[message.guild.id];
 
-        if (server.dispatcher) {
-            server.dispatcher.pause(true);
+        if (message.member.voice.channel)
+            if (server.dispatcher) {
+                server.dispatcher.pause();
+                const embed = new MessageEmbed()
+                    .setDescription("**⏸ Paused!**")
+                    .setColor(colors.Green);
+                message.channel.send(embed);
+            } else {
+                const embed = new MessageEmbed()
+                    .setDescription("**❌ I'm not playing anything!**")
+                    .setColor(colors.Green);
+                message.channel.send(embed);
+            }
+        else {
             const embed = new MessageEmbed()
-                .setDescription("**⏸ Paused!**")
+                .setDescription("**❌ You're not in a Voice Channel!**")
                 .setColor(colors.Green);
             message.channel.send(embed);
         }
