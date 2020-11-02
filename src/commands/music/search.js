@@ -80,7 +80,10 @@ module.exports = {
                         )
                         .then((choice) => {
                             const filter = (choice) =>
-                                !choice.author.bot && choice.author;
+                                (!choice.author.bot &&
+                                    choice.author &&
+                                    choice.conent !== "cancel") ||
+                                parseInt(choice.conent);
                             choice.channel
                                 .awaitMessages(filter, {
                                     max: 1,

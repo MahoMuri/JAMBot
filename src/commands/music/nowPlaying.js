@@ -23,8 +23,9 @@ module.exports = {
             return message.channel.send(embed);
         }
 
+        const seek = server.dispatcher.streamOptions.seek;
         const songLength = server.queue[index].duration;
-        const curTime = Math.floor(server.dispatcher.streamTime / 1000);
+        const curTime = Math.floor(server.dispatcher.streamTime / 1000) + seek;
         const charArray = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬";
         const trackLine = charArray.split("");
         const curPos = Math.floor((curTime / songLength) * trackLine.length);

@@ -74,6 +74,9 @@ module.exports = (bot) => {
                     },
                     queue: [],
                 };
+            const server = bot.servers[message.guild.id];
+            if (server.channel.text !== message.channel)
+                server.channel.text = message.channel;
             command.run(bot, message, args, lsprfxes[0]);
         }
     });

@@ -33,10 +33,7 @@ module.exports = (bot) => {
                         "**👋 Successfully Disconnected!**",
                         server.queue
                     );
-                } else if (!server.channel.text.deleted)
-                    server.channel.text.send(
-                        "**👋 Successfully Disconnected!**"
-                    );
+                }
             } else if (
                 oldState.channel !== newState.channel &&
                 newState !== null

@@ -60,19 +60,32 @@ function addCommas(nStr) {
 }
 
 function play(connection, message, server, bot, seek) {
-    const index = 0;
     const seekTime = seek || 0;
-    const stream = ytdl(server.queue[index].song.toString(), {
+
+    // Initialize Opus Encoder
+    const stream = ytdl(server.queue[0].song.toString(), {
         quality: "highestaudio",
+        seek: seekTime,
         opusEncoded: true,
         highWaterMark: 1 << 25,
     });
+
     server.dispatcher = connection.play(stream, {
         type: "opus",
+        seek: seekTime,
+        fec: true,
     });
 
     server.dispatcher.on("start", () => {
         console.log("Playing Music!");
+        if (seekTime) {
+            const embed = new MessageEmbed()
+                .setDescription(
+                    `✅ **Set track time to \`${convertDuration(seekTime)}\`!**`
+                )
+                .setColor(colors.Green);
+            return message.channel.send(embed);
+        }
         if (bot.embedMessage)
             if (!server.channel.text.deleted) {
                 if (server.channel.text.messages.resolve(bot.embedMessage))
@@ -85,13 +98,13 @@ function play(connection, message, server, bot, seek) {
             .setAuthor("Now Playing:", bot.logo)
             .setColor(colors.Turquoise)
             .setDescription(
-                stripIndents`[${server.queue[index].title}](${
-                    server.queue[index].song
+                stripIndents`[${server.queue[0].title}](${
+                    server.queue[0].song
                 }) | \`${convertDuration(
-                    server.queue[index].duration
-                )}\`\nRequested by: ${server.queue[index].owner}`
+                    server.queue[0].duration
+                )}\`\nRequested by: ${server.queue[0].owner}`
             )
-            .setThumbnail(server.queue[index].thumbnail);
+            .setThumbnail(server.queue[0].thumbnail);
         server.channel.text.send(embed).then((msg) => {
             bot.embedMessage = msg.id;
         });
@@ -116,7 +129,9 @@ function play(connection, message, server, bot, seek) {
             }
         }
 
-        if (server.queue.length > 0 && server.queue[index] !== undefined)
+        console.log(server.queue[0]);
+
+        if (server.queue.length > 0 && server.queue !== undefined)
             play(connection, message, server, bot);
         else console.log("Queue is empty!");
     });
@@ -132,14 +147,20 @@ function play(connection, message, server, bot, seek) {
                     msg.delete({ timeout: 5000 });
                 });
             server.queue.shift();
-            if (server.queue.length > 0 && server.queue[index] !== undefined)
+            if (server.queue.length > 0 && server.queue !== undefined)
                 play(connection, message, server, bot);
         } else if (error.message.includes("Error parsing info:")) {
-            if (server.queue.length > 0 && server.queue[index] !== undefined)
+            if (server.queue.length > 0 && server.queue !== undefined)
                 play(connection, message, server, bot);
-        } else if (error.message.includes("Could not find player config"))
-            if (server.queue.length > 0 && server.queue[index] !== undefined)
+        } else if (error.message.includes("Could not find player config")) {
+            if (server.queue.length > 0 && server.queue !== undefined)
                 play(connection, message, server, bot);
+        } else if (
+            error.message.includes(
+                'The "url" argument must be of type string. Received undefined'
+            )
+        )
+            console.log(server.queue);
     });
 }
 

@@ -242,8 +242,6 @@ async function _YouTube(song, message, connection, server, bot, options) {
             }
         } // End of parameter check
 
-        console.log(server.queue);
-
         // Checks for instance of server dispatcher
         if (!server.dispatcher)
             // Execute this if no dispatcher is found
