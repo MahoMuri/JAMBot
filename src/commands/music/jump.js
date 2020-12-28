@@ -33,11 +33,11 @@ module.exports = {
                     .setTitle("✅ Jumped to: ")
                     .setColor(colors.Green)
                     .setDescription(
-                        stripIndents`[${server.queue[index].title}](${
-                            server.queue[index].song
+                        stripIndents`[${jump.title}](${
+                            jump.song
                         }) | \`${convertDuration(
-                            server.queue[index].duration
-                        )}\`\nRequested by: ${server.queue[index].owner}`
+                            jump.duration
+                        )}\`\nRequested by: ${jump.owner}`
                     );
                 message.channel.send(embed);
                 play(connection, message, server, bot);

@@ -129,9 +129,9 @@ function play(connection, message, server, bot, seek) {
             }
         }
 
-        console.log(server.queue[0]);
+        console.log(server.queue);
 
-        if (server.queue.length > 0 && server.queue !== undefined)
+        if (server.queue.length > 0 && server.queue[0] !== undefined)
             play(connection, message, server, bot);
         else console.log("Queue is empty!");
     });
@@ -147,13 +147,13 @@ function play(connection, message, server, bot, seek) {
                     msg.delete({ timeout: 5000 });
                 });
             server.queue.shift();
-            if (server.queue.length > 0 && server.queue !== undefined)
+            if (server.queue.length > 0 && server.queue[0] !== undefined)
                 play(connection, message, server, bot);
         } else if (error.message.includes("Error parsing info:")) {
-            if (server.queue.length > 0 && server.queue !== undefined)
+            if (server.queue.length > 0 && server.queue[0] !== undefined)
                 play(connection, message, server, bot);
         } else if (error.message.includes("Could not find player config")) {
-            if (server.queue.length > 0 && server.queue !== undefined)
+            if (server.queue.length > 0 && server.queue[0] !== undefined)
                 play(connection, message, server, bot);
         } else if (
             error.message.includes(

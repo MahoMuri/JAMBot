@@ -3,6 +3,7 @@ module.exports = {
         {
             name: "JAMBot",
             script: "./src/index.js",
+            time: true,
         },
     ],
 

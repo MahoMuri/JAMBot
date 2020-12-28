@@ -33,6 +33,21 @@ module.exports = (bot) => {
                         "**👋 Successfully Disconnected!**",
                         server.queue
                     );
+                } else if (server) {
+                    if (server.channel.text) {
+                        console.log(server.channel.text.name);
+                        if (
+                            oldState.guild.channels.resolve(server.channel.text)
+                        )
+                            server.channel.text
+                                .send("**👋 Successfully Disconnected!**")
+                                .catch(console.error);
+                    }
+
+                    console.log(
+                        "**👋 Successfully Disconnected!**",
+                        server.channel.text.deleted
+                    );
                 }
             } else if (
                 oldState.channel !== newState.channel &&
@@ -48,18 +63,27 @@ module.exports = (bot) => {
                         `✅ **Joined ${newState.channel.name} Channel!**`
                     );
                 }
-        } else if (oldState.channel && !newState.channel) {
-            if (server && server.channel.voice)
-                if (oldState && oldState.channel !== null) {
-                    const members = oldState.channel.members.map(
-                        (member) => member
+        } else if (server && oldState.channel === server.channel.voice) {
+            const members = server.channel.voice.members.map(
+                (member) => member
+            );
+            if (members.length === 1)
+                if (members[0].user === bot.user) {
+                    console.log(
+                        "All members are in a different Voice Channel!"
                     );
-                    if (members.length === 1)
-                        if (members[0].user === bot.user)
-                            timer = setTimeout(() => {
-                                server.channel.voice.leave();
-                            }, ms("5m"));
+                    timer = setTimeout(() => {
+                        server.channel.voice.leave();
+                    }, ms("10s"));
                 }
-        } else if (!oldState.channel && newState.channel) clearTimeout(timer);
+        } else if (server && newState.channel === server.channel.voice) {
+            const members = server.channel.voice.members.map(
+                (member) => member
+            );
+            if (members.length > 1) {
+                console.log("Timer cleared");
+                clearTimeout(timer);
+            }
+        }
     });
 };
