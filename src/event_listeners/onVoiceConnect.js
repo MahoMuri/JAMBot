@@ -74,7 +74,7 @@ module.exports = (bot) => {
                     );
                     timer = setTimeout(() => {
                         server.channel.voice.leave();
-                    }, ms("10s"));
+                    }, ms("1m"));
                 }
         } else if (server && newState.channel === server.channel.voice) {
             const members = server.channel.voice.members.map(
