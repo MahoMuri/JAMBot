@@ -13,7 +13,7 @@
     "author": "mahomuri",
     "license": "MIT",
     "dependencies": {
-        "@discordjs/opus": "^0.3.3",
+        "@discordjs/opus": "^0.8.0",
         "@sindresorhus/to-milliseconds": "^1.2.0",
         "ascii-table": "0.0.9",
         "bufferutil": "^4.0.3",
